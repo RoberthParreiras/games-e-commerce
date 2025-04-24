@@ -3,11 +3,13 @@ import prisma from "../models/prisma/prismaClient";
 import { v4 as uuidv4 } from "uuid";
 import { CreateUser } from "../models/User";
 import { createHashedPassword } from "../components/passwordHandler";
+import { convertUuidToBytes, createUuid } from "../components/uuidHandler";
 
 class UserController {
   static async getUser(req: Request, res: Response) {
     try {
-      const userIdBuffer = Buffer.from(req.params.id.replace(/-/g, ""), "hex");
+      const userIdBuffer = convertUuidToBytes(req.body.id);
+
       const user = await prisma.user.findUnique({
         where: {
           id: userIdBuffer,
@@ -22,8 +24,7 @@ class UserController {
 
   static async createUser(req: Request, res: Response) {
     try {
-      const userIdUuid = uuidv4();
-      const userIdBytes = Buffer.from(userIdUuid.replace(/-/g, ""), "hex");
+      const userIdBytes = createUuid();
 
       const validateUserFields = CreateUser.safeParse({
         email: req.body.email,
@@ -46,7 +47,6 @@ class UserController {
 
       res.status(201).json({
         message: "User created with success!",
-        id: userIdUuid,
       });
     } catch (error) {
       console.log("error", error);

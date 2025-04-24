@@ -15,3 +15,13 @@ model User {
   email    String @unique
   password String
 }
+
+  model Games {
+  id          Bytes    @id @db.Binary(16)
+  name        String
+  description String
+  image       String
+  price       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
