@@ -1,0 +1,17 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "generated"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Bytes  @id @db.Binary(16)
+  name     String
+  email    String @unique
+  password String
+}
