@@ -1,10 +1,11 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { createUuid } from "../components/uuidHandler";
 import { CreateGame } from "../models/Game";
 import prisma from "../models/prisma/prismaClient";
+import CustomErrorHandler from "../components/customErrorHandler";
 
 class GamesController {
-  static async createGame(req: Request, res: Response) {
+  static async createGame(req: Request, res: Response, next: NextFunction) {
     try {
       const gamesIdBytes = createUuid();
 
@@ -14,6 +15,11 @@ class GamesController {
         image: req.body.image,
         price: req.body.price,
       });
+
+      if (!validateGamesField.success) {
+        const error = new CustomErrorHandler("Error to validate fields", 500);
+        throw error;
+      }
 
       const { name, description, image, price } = validateGamesField.data!;
 
@@ -31,7 +37,7 @@ class GamesController {
 
       res.status(201).json({ message: "Game created with success!" });
     } catch (error) {
-      res.status(500).json({ message: error });
+      next(error);
     }
   }
 }

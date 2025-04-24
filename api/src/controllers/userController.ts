@@ -1,12 +1,12 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import prisma from "../models/prisma/prismaClient";
-import { v4 as uuidv4 } from "uuid";
 import { CreateUser } from "../models/User";
 import { createHashedPassword } from "../components/passwordHandler";
 import { convertUuidToBytes, createUuid } from "../components/uuidHandler";
+import CustomErrorHandler from "../components/customErrorHandler";
 
 class UserController {
-  static async getUser(req: Request, res: Response) {
+  static async getUser(req: Request, res: Response, next: NextFunction) {
     try {
       const userIdBuffer = convertUuidToBytes(req.body.id);
 
@@ -16,13 +16,18 @@ class UserController {
         },
       });
 
+      if (!user) {
+        const error = new CustomErrorHandler("User not found", 404);
+        throw error;
+      }
+
       res.status(200).json({ name: user!.name, email: user!.email });
     } catch (error) {
-      res.status(500).json({ message: "User not found" });
+      next(error);
     }
   }
 
-  static async createUser(req: Request, res: Response) {
+  static async createUser(req: Request, res: Response, next: NextFunction) {
     try {
       const userIdBytes = createUuid();
 
@@ -31,6 +36,11 @@ class UserController {
         name: req.body.name,
         password: req.body.password,
       });
+
+      if (!validateUserFields.success) {
+        const error = new CustomErrorHandler("Error to validate fields", 500);
+        throw error;
+      }
 
       const { email, name, password } = validateUserFields.data!;
 
@@ -49,8 +59,7 @@ class UserController {
         message: "User created with success!",
       });
     } catch (error) {
-      console.log("error", error);
-      res.status(500).json({ message: "ERROR" });
+      next(error);
     }
   }
 }
