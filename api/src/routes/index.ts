@@ -1,7 +1,7 @@
 import express from "express";
-import userRouter from "./userRoutes";
-import loginRoutes from "./loginRoutes";
-import gameRoutes from "./gameRoutes";
+import userRouter from "./userRoutes.js";
+import loginRoutes from "./loginRoutes.js";
+import gameRoutes from "./gameRoutes.js";
 
 const routes = (app: express.Application) =>
   app

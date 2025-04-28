@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { createUuid } from "../components/uuidHandler";
-import { CreateGame } from "../models/Game";
-import prisma from "../models/prisma/prismaClient";
-import CustomErrorHandler from "../components/customErrorHandler";
+import { createUuid } from "../components/uuidHandler.js";
+import { CreateGame } from "../models/Game.js";
+import prisma from "../models/prisma/prismaClient.js";
+import CustomErrorHandler from "../components/customErrorHandler.js";
 
 class GamesController {
   static async createGame(req: Request, res: Response, next: NextFunction) {
@@ -36,6 +36,23 @@ class GamesController {
       });
 
       res.status(201).json({ message: "Game created with success!" });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async listGames(req: Request, res: Response, next: NextFunction) {
+    try {
+      const listGames = await prisma.games.findMany();
+
+      if (listGames.length == null) {
+        const error = new CustomErrorHandler("There is no game listed", 404);
+        throw error;
+      }
+
+      res
+        .status(200)
+        .json({ message: "Successful list of games", list: listGames });
     } catch (error) {
       next(error);
     }

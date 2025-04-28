@@ -1,7 +1,7 @@
 generator client {
   provider        = "prisma-client-js"
-  output          = "generated"
-  previewFeatures = ["prismaSchemaFolder"]
+  // output          = "generated"
+  // previewFeatures = ["prismaSchemaFolder"]
 }
 
 datasource db {

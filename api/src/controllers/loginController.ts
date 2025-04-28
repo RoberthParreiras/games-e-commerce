@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import prisma from "../models/prisma/prismaClient";
-import { isValidPassword } from "../components/passwordHandler";
-import CustomErrorHandler from "../components/customErrorHandler";
+import prisma from "../models/prisma/prismaClient.js";
+import { isValidPassword } from "../components/passwordHandler.js";
+import CustomErrorHandler from "../components/customErrorHandler.js";
+import { signUser } from "../components/signInHandler.js";
 
 class LoginController {
   static async login(req: Request, res: Response, next: NextFunction) {
@@ -17,7 +18,13 @@ class LoginController {
         throw error;
       }
 
-      res.status(200).json({ message: "Login successful" });
+      const payload = {
+        user: user.id,
+      };
+
+      const jwtToken = await signUser(payload);
+
+      res.status(200).json({ message: `Login successful. TOKEN:${jwtToken}` });
     } catch (error) {
       next(error);
     }

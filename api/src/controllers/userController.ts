@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import prisma from "../models/prisma/prismaClient";
-import { CreateUser } from "../models/User";
-import { createHashedPassword } from "../components/passwordHandler";
-import { convertUuidToBytes, createUuid } from "../components/uuidHandler";
-import CustomErrorHandler from "../components/customErrorHandler";
+import prisma from "../models/prisma/prismaClient.js";
+import { CreateUser } from "../models/User.js";
+import { createHashedPassword } from "../components/passwordHandler.js";
+import { convertUuidToBytes, createUuid } from "../components/uuidHandler.js";
+import CustomErrorHandler from "../components/customErrorHandler.js";
 
 class UserController {
   static async getUser(req: Request, res: Response, next: NextFunction) {
@@ -46,7 +46,7 @@ class UserController {
 
       const hashedPassword = await createHashedPassword(password);
 
-      await prisma.user.create({
+      const user = await prisma.user.create({
         data: {
           id: userIdBytes,
           name: name,
