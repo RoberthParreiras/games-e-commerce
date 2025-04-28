@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { createUuid } from "../components/uuidHandler.js";
+import {
+  convertBytesToUuid,
+  convertUuidToBytes,
+  createUuid,
+} from "../components/uuidHandler.js";
 import { CreateGame } from "../models/Game.js";
 import prisma from "../models/prisma/prismaClient.js";
 import CustomErrorHandler from "../components/customErrorHandler.js";
@@ -43,16 +47,37 @@ class GamesController {
 
   static async listGames(req: Request, res: Response, next: NextFunction) {
     try {
-      const listGames = await prisma.games.findMany();
+      const gamesList = await prisma.games.findMany();
 
-      if (listGames.length == null) {
+      if (gamesList.length == null) {
         const error = new CustomErrorHandler("There is no game listed", 404);
         throw error;
       }
 
-      res
-        .status(200)
-        .json({ message: "Successful list of games", list: listGames });
+      const gamesListForReturn = gamesList.map((game) => ({
+        ...game,
+        id: convertBytesToUuid(game.id),
+      }));
+
+      res.status(200).json({
+        message: "Successful list games",
+        gamesListForReturn,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deleteGame(req: Request, res: Response, next: NextFunction) {
+    try {
+      const gameId = req.params.id;
+      await prisma.games.delete({
+        where: {
+          id: convertUuidToBytes(gameId),
+        },
+      });
+
+      res.status(200).json({ message: "Game deleted successfully" });
     } catch (error) {
       next(error);
     }

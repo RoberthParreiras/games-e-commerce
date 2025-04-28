@@ -1,3 +1,4 @@
+import { buffer } from "stream/consumers";
 import { v4 as uuidv4 } from "uuid";
 
 function createUuid() {
@@ -12,4 +13,13 @@ function convertUuidToBytes(uuid: string) {
   return userIdBuffer;
 }
 
-export { createUuid, convertUuidToBytes };
+function convertBytesToUuid(bytes: Uint8Array<ArrayBufferLike>) {
+  const buffer = Buffer.from(bytes);
+  const hex = buffer.toString("hex");
+  return `${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(
+    12,
+    16
+  )}-${hex.substring(16, 20)}-${hex.substring(20, 32)}`;
+}
+
+export { createUuid, convertUuidToBytes, convertBytesToUuid };
