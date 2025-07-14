@@ -6,16 +6,37 @@ import {
   convertUuidToBytes,
 } from 'src/common/utils/uuid.util';
 import { getChangedFields } from 'src/common/utils/check-changed-fields.util';
+import { MoneyConverter } from 'src/common/utils/money-converter.util';
 
 @Injectable()
 export class GamesService {
   constructor(private prisma: PrismaService) {}
 
+  private prepareUpdateData(changedFields: any) {
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    if (changedFields.name) {
+      updateData.name = changedFields.name;
+    }
+
+    if (changedFields.description) {
+      updateData.description = changedFields.description;
+    }
+
+    if (changedFields.price) {
+      updateData.price = parseInt(changedFields.price);
+    }
+
+    return updateData;
+  }
+
   async create(params: {
     name: string;
     description: string;
     image: string;
-    price: number;
+    price: string;
   }) {
     const { name, description, image, price } = params;
 
@@ -27,7 +48,7 @@ export class GamesService {
         name,
         description,
         image,
-        price,
+        price: parseInt(price),
       },
     });
   }
@@ -38,6 +59,7 @@ export class GamesService {
     const gamesListReturn = gamesList.map((game) => ({
       ...game,
       id: convertBytesToUuid(game.id),
+      price: MoneyConverter.centsToReal(game.price.toNumber()),
     }));
 
     return gamesListReturn;
@@ -47,7 +69,7 @@ export class GamesService {
     id: string;
     name?: string;
     description?: string;
-    price?: number;
+    price?: string;
   }) {
     const { id, ...updates } = params;
 
@@ -59,20 +81,19 @@ export class GamesService {
       {
         name: currentGame?.name,
         description: currentGame?.description,
-        price: currentGame?.price,
+        price: currentGame?.price.toString(),
       },
       updates,
     );
 
     if (Object.keys(changedFields).length > 0) {
+      const updateData = this.prepareUpdateData(changedFields);
+
       await this.prisma.games.update({
         where: {
           id: convertUuidToBytes(id),
         },
-        data: {
-          ...changedFields,
-          updatedAt: new Date(),
-        },
+        data: updateData,
       });
     }
   }

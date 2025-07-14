@@ -7,7 +7,6 @@ import {
   Param,
   Post,
   Put,
-  Req,
   Res,
   UsePipes,
 } from '@nestjs/common';
