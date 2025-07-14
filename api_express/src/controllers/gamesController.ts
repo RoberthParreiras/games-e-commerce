@@ -49,7 +49,7 @@ class GamesController {
     try {
       const gamesList = await prisma.games.findMany();
 
-      if (gamesList.length == null) {
+      if (gamesList.length === 0) {
         const error = new CustomErrorHandler("There is no game listed", 404);
         throw error;
       }
