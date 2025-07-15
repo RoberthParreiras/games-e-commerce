@@ -12,6 +12,9 @@ import { MoneyConverter } from 'src/common/utils/money-converter.util';
 export class GamesService {
   constructor(private prisma: PrismaService) {}
 
+  private MINPAGE = 1;
+  private MAXLIMIT = 10;
+
   private prepareUpdateData(changedFields: any) {
     const updateData: any = {
       updatedAt: new Date(),
@@ -74,8 +77,28 @@ export class GamesService {
     return gameReturn;
   }
 
-  async listAll() {
-    const gamesList = await this.prisma.games.findMany();
+  async listAll({
+    page = this.MINPAGE,
+    limit = this.MAXLIMIT,
+  }: {
+    page?: number;
+    limit?: number;
+  }) {
+    if (limit < 1) limit = 1;
+    if (limit > this.MAXLIMIT) limit = this.MAXLIMIT;
+
+    // skip to the first item of the page
+    const skipNum = (page - 1) * limit;
+
+    const [gamesList, totalGames] = await this.prisma.$transaction([
+      this.prisma.games.findMany({
+        skip: skipNum,
+        take: Number(limit),
+      }),
+      this.prisma.games.count(),
+    ]);
+
+    const totalPages = Math.ceil(totalGames / limit);
 
     const gamesListReturn = gamesList.map((game) => ({
       ...game,
@@ -83,7 +106,7 @@ export class GamesService {
       price: MoneyConverter.centsToReal(game.price.toNumber()),
     }));
 
-    return gamesListReturn;
+    return { gamesListReturn, totalPages };
   }
 
   async put(params: {

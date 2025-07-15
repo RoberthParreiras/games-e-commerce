@@ -6,8 +6,10 @@ import {
   HttpStatus,
   Logger,
   Param,
+  ParseIntPipe,
   Post,
   Put,
+  Query,
   Res,
   UsePipes,
 } from '@nestjs/common';
@@ -53,8 +55,16 @@ export class GamesController {
   }
 
   @Get()
-  async listAllGames(@Res() response: Response) {
-    const games = await this.gamesService.listAll();
+  async listAllGames(
+    @Query('page', ParseIntPipe) page: number,
+    @Query('limit', ParseIntPipe) limit: number,
+    @Res() response: Response,
+  ) {
+    const { gamesListReturn: games, totalPages } =
+      await this.gamesService.listAll({
+        page,
+        limit,
+      });
 
     this.logger.log(
       `[${this.listAllGames.name}] ${HttpStatus.OK} - List games with success`,
@@ -63,6 +73,7 @@ export class GamesController {
     response.status(HttpStatus.OK).json({
       message: 'List games with success',
       games,
+      totalPages,
     });
   }
 

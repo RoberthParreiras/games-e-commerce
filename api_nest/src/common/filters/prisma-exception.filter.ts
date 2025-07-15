@@ -12,7 +12,7 @@ export class PrismaExceptionFilter implements PrismaException {
   catchPrismaError(exception: PrismaClientKnownRequestError) {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | object = 'Internal server error';
-    
+
     switch (exception.code) {
       case 'P2002': {
         status = HttpStatus.CONFLICT;
