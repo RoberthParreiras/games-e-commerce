@@ -38,6 +38,20 @@ export class GamesController {
     });
   }
 
+  @Get(':id')
+  async getGame(@Param('id') id: string, @Res() response: Response) {
+    const game = await this.gamesService.get({ id });
+
+    this.logger.log(
+      `[${this.getGame.name}] ${HttpStatus.OK} - Game with id: ${id} founded with success`,
+    );
+
+    response.status(HttpStatus.OK).json({
+      message: 'Game retrieved successfully',
+      game,
+    });
+  }
+
   @Get()
   async listAllGames(@Res() response: Response) {
     const games = await this.gamesService.listAll();
@@ -81,7 +95,7 @@ export class GamesController {
     this.logger.log(
       `[${this.deleteGame.name}] ${HttpStatus.OK} - Game with id: ${id} deleted successfully`,
     );
-    
+
     response.status(HttpStatus.OK).json({
       message: 'Game deleted with success',
     });

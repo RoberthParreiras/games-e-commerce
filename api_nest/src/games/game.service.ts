@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../models/prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -53,6 +53,27 @@ export class GamesService {
     });
   }
 
+  async get(params: { id: string }) {
+    const { id } = params;
+
+    const game = await this.prisma.games.findUnique({
+      where: {
+        id: convertUuidToBytes(id),
+      },
+    });
+
+    if (!game) {
+      throw new NotFoundException('Game not found');
+    }
+
+    const gameReturn = {
+      ...game,
+      id: convertBytesToUuid(game.id),
+    };
+
+    return gameReturn;
+  }
+
   async listAll() {
     const gamesList = await this.prisma.games.findMany();
 
@@ -76,6 +97,10 @@ export class GamesService {
     const currentGame = await this.prisma.games.findUnique({
       where: { id: convertUuidToBytes(id) },
     });
+
+    if (!currentGame) {
+      throw new NotFoundException('Game not found');
+    }
 
     const changedFields = getChangedFields(
       {

@@ -22,9 +22,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message: {} | string = 'Internal server error';
+    let message: string | object = 'Internal server error';
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -33,7 +33,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       ({ status, message } = this.prismaException.catchPrismaError(exception));
     }
 
-    this.logger.error(`[${request.url}] ${status} - ${message}`);
+    this.logger.error(`[${request.url}] ${status} - ${exception.message}`);
 
     response.status(status).json({
       statusCode: status,
