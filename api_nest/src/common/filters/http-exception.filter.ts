@@ -4,13 +4,17 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Request, Response } from 'express';
+import { PrismaExceptionFilter } from './prisma-exception.filter';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly prismaException = new PrismaExceptionFilter();
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
   catch(
     exception: HttpException | PrismaClientKnownRequestError,
     host: ArgumentsHost,
@@ -18,36 +22,24 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+    
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: {} | string = 'Internal server error';
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.getResponse();
-    } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
-      switch (exception.code) {
-        case 'P2002': {
-          status = HttpStatus.CONFLICT;
-          message = `Unique constraint violation`;
-          break;
-        }
-        case 'P2025': {
-          status = HttpStatus.NOT_FOUND;
-          message = exception.meta?.cause || 'Record not found';
-          break;
-        }
-        default: {
-          status = HttpStatus.BAD_REQUEST;
-          message = 'Database request error';
-        }
-      }
+    } else if (exception instanceof PrismaClientKnownRequestError) {
+      ({ status, message } = this.prismaException.catchPrismaError(exception));
     }
+
+    this.logger.error(`[${request.url}] ${status} - ${message}`);
 
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      message: typeof message === 'string' ? { message } : message,
+      message: message,
     });
   }
 }

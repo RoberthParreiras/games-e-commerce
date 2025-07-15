@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpStatus,
+  Logger,
   Param,
   Post,
   Put,
@@ -18,6 +19,7 @@ import { Response } from 'express';
 @Controller('/games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
+  private readonly logger = new Logger(GamesController.name);
 
   @Post()
   @UsePipes(new ZodValidationPipe(CreateGame))
@@ -26,16 +28,26 @@ export class GamesController {
     @Res() response: Response,
   ) {
     await this.gamesService.create(createGameDto);
+
+    this.logger.log(
+      `[${this.createGame.name}] ${HttpStatus.CREATED} - Game created with success`,
+    );
+
     response.status(HttpStatus.CREATED).json({
-      message: 'Created with success',
+      message: 'Game created with success',
     });
   }
 
   @Get()
   async listAllGames(@Res() response: Response) {
     const games = await this.gamesService.listAll();
+
+    this.logger.log(
+      `[${this.listAllGames.name}] ${HttpStatus.OK} - List games with success`,
+    );
+
     response.status(HttpStatus.OK).json({
-      message: 'Success',
+      message: 'List games with success',
       games,
     });
   }
@@ -52,16 +64,26 @@ export class GamesController {
       description: body.description,
       price: body.price,
     });
+
+    this.logger.log(
+      `[${this.updateGame.name}] ${HttpStatus.OK} - Game with id: ${id} updated successfully`,
+    );
+
     response.status(HttpStatus.OK).json({
-      message: 'Updated with success',
+      message: 'Game updated with success',
     });
   }
 
   @Delete(':id')
   async deleteGame(@Param('id') id: string, @Res() response: Response) {
     await this.gamesService.delete({ id });
+
+    this.logger.log(
+      `[${this.deleteGame.name}] ${HttpStatus.OK} - Game with id: ${id} deleted successfully`,
+    );
+    
     response.status(HttpStatus.OK).json({
-      message: 'Deleted with success',
+      message: 'Game deleted with success',
     });
   }
 }
