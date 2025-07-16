@@ -1,4 +1,4 @@
-import { MoneyConverter } from 'src/common/utils/money-converter.util';
+import { MoneyConverter } from '../common/utils/money-converter.util';
 import { z } from 'zod';
 
 const GameSchema = z.object({

@@ -4,16 +4,17 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   convertBytesToUuid,
   convertUuidToBytes,
-} from 'src/common/utils/uuid.util';
-import { getChangedFields } from 'src/common/utils/check-changed-fields.util';
-import { MoneyConverter } from 'src/common/utils/money-converter.util';
+} from '../common/utils/uuid.util';
+import { getChangedFields } from '../common/utils/check-changed-fields.util';
+import { MoneyConverter } from '../common/utils/money-converter.util';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GamesService {
-  constructor(private prisma: PrismaService) {}
-
-  private MINPAGE = 1;
-  private MAXLIMIT = 10;
+  constructor(
+    private prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {}
 
   private prepareUpdateData(changedFields: any) {
     const updateData: any = {
@@ -45,7 +46,7 @@ export class GamesService {
 
     const uuid = uuidv4();
 
-    await this.prisma.games.create({
+    const gameCreated = await this.prisma.games.create({
       data: {
         id: convertUuidToBytes(uuid),
         name,
@@ -54,6 +55,8 @@ export class GamesService {
         price: parseInt(price),
       },
     });
+
+    return gameCreated;
   }
 
   async get(params: { id: string }) {
@@ -78,27 +81,29 @@ export class GamesService {
   }
 
   async listAll({
-    page = this.MINPAGE,
-    limit = this.MAXLIMIT,
+    page = this.configService.get<number>('DEFAULT_PAGE'),
+    limit = this.configService.get<number>('DEFAULT_LIMIT'),
   }: {
     page?: number;
     limit?: number;
   }) {
-    if (limit < 1) limit = 1;
-    if (limit > this.MAXLIMIT) limit = this.MAXLIMIT;
+    const maxLimit = this.configService.get<number>('DEFAULT_LIMIT');
+    if (limit! < 1) limit = 1;
+    if (limit! > maxLimit!)
+      limit = this.configService.get<number>('DEFAULT_LIMIT');
 
     // skip to the first item of the page
-    const skipNum = (page - 1) * limit;
+    const skipNum = (page! - 1) * limit!;
 
     const [gamesList, totalGames] = await this.prisma.$transaction([
       this.prisma.games.findMany({
         skip: skipNum,
-        take: Number(limit),
+        take: limit,
       }),
       this.prisma.games.count(),
     ]);
 
-    const totalPages = Math.ceil(totalGames / limit);
+    const totalPages = Math.ceil(totalGames / limit!);
 
     const gamesListReturn = gamesList.map((game) => ({
       ...game,

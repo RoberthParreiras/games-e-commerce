@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpStatus,
@@ -14,13 +15,17 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { GamesService } from './game.service';
-import { ZodValidationPipe } from 'src/models/zod.pipe';
+import { ZodValidationPipe } from '../models/zod.pipe';
 import { CreateGame, CreateGameDto } from './game.schema';
 import { Response } from 'express';
+import { convertBytesToUuid } from '../common/utils/uuid.util';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('/games')
 export class GamesController {
-  constructor(private readonly gamesService: GamesService) {}
+  constructor(
+    private readonly gamesService: GamesService,
+  ) {}
   private readonly logger = new Logger(GamesController.name);
 
   @Post()
@@ -29,7 +34,12 @@ export class GamesController {
     @Body() createGameDto: CreateGameDto,
     @Res() response: Response,
   ) {
-    await this.gamesService.create(createGameDto);
+    const gamecreated = await this.gamesService.create(createGameDto);
+
+    const game = {
+      ...gamecreated,
+      id: convertBytesToUuid(gamecreated.id),
+    };
 
     this.logger.log(
       `[${this.createGame.name}] ${HttpStatus.CREATED} - Game created with success`,
@@ -37,6 +47,7 @@ export class GamesController {
 
     response.status(HttpStatus.CREATED).json({
       message: 'Game created with success',
+      game,
     });
   }
 
@@ -56,8 +67,10 @@ export class GamesController {
 
   @Get()
   async listAllGames(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('limit', ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
+    limit: number,
     @Res() response: Response,
   ) {
     const { gamesListReturn: games, totalPages } =
