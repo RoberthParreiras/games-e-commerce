@@ -1,4 +1,4 @@
-import { MoneyConverter } from '../common/utils/money-converter.util';
+import { MoneyConverter } from '../../common/utils/money-converter.util';
 import { z } from 'zod';
 
 const GameSchema = z.object({
@@ -21,6 +21,14 @@ const CreateGame = GameSchema.omit({
   updatedAt: true,
 });
 
+const UpdateGame = GameSchema.omit({
+  id: true,
+  createdAt: true,
+  image: true,
+  updatedAt: true,
+});
+
 export type CreateGameDto = z.infer<typeof CreateGame>;
+export type UpdateGameDto = z.infer<typeof UpdateGame>;
 
 export { CreateGame };

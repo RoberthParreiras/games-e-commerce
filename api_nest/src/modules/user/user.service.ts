@@ -2,18 +2,23 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   convertBytesToUuid,
   convertUuidToBytes,
-} from '../common/utils/uuid.util';
-import { PrismaService } from '../models/prisma/prisma.service';
+} from '../../common/utils/uuid.util';
+import { PrismaService } from '../../models/prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
-import { getChangedFields } from '../common/utils/check-changed-fields.util';
+import { getChangedFields } from '../../common/utils/check-changed-fields.util';
+
+interface UserUpdateData {
+  updatedAt: Date;
+  name?: string;
+}
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private prepareUpdateData(changedFields: any) {
-    const updateData: any = {
+  private prepareUpdateData(changedFields: { name?: string }): UserUpdateData {
+    const updateData: UserUpdateData = {
       updatedAt: new Date(),
     };
 

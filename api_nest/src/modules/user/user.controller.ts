@@ -12,10 +12,10 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ZodValidationPipe } from '../models/zod.pipe';
-import { CreateUser, CreateUserDto } from './user.schema';
+import { ZodValidationPipe } from '../../models/zod.pipe';
+import { CreateUser, CreateUserDto, UpdateUser } from './user.schema';
 import { Response } from 'express';
-import { convertBytesToUuid } from '../common/utils/uuid.util';
+import { convertBytesToUuid } from '../../common/utils/uuid.util';
 
 @Controller('/user')
 export class UserController {
@@ -62,7 +62,7 @@ export class UserController {
   @Put(':id')
   async updateUser(
     @Param('id') id: string,
-    @Body() body: any,
+    @Body() body: UpdateUser,
     @Res() response: Response,
   ) {
     await this.userService.put({ id, name: body.name });

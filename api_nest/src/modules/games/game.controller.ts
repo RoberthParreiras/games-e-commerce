@@ -15,10 +15,10 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { GamesService } from './game.service';
-import { ZodValidationPipe } from '../models/zod.pipe';
-import { CreateGame, CreateGameDto } from './game.schema';
+import { ZodValidationPipe } from '../../models/zod.pipe';
+import { CreateGame, CreateGameDto, UpdateGameDto } from './game.schema';
 import { Response } from 'express';
-import { convertBytesToUuid } from '../common/utils/uuid.util';
+import { convertBytesToUuid } from '../../common/utils/uuid.util';
 
 @Controller('/games')
 export class GamesController {
@@ -53,7 +53,7 @@ export class GamesController {
     const game = await this.gamesService.get({ id });
 
     this.logger.log(
-      `[${this.getGame.name}] ${HttpStatus.OK} - Game with id: ${id} founded with success`,
+      `[${this.getGame.name}] ${HttpStatus.OK} - Game with id: ${id} found with success`,
     );
 
     response.status(HttpStatus.OK).json({
@@ -90,7 +90,7 @@ export class GamesController {
   @Put(':id')
   async updateGame(
     @Param('id') id: string,
-    @Body() body: any,
+    @Body() body: UpdateGameDto,
     @Res() response: Response,
   ) {
     await this.gamesService.put({

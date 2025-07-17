@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GamesController } from './game.controller';
 import { GamesService } from './game.service';
-import { ZodValidationPipe } from '../models/zod.pipe';
+import { ZodValidationPipe } from '../../models/zod.pipe';
 import { CreateGame } from './game.schema';
 import { HttpStatus } from '@nestjs/common';
 import { Response } from 'express';

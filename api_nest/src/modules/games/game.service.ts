@@ -1,13 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../models/prisma/prisma.service';
+import { PrismaService } from '../../models/prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import {
   convertBytesToUuid,
   convertUuidToBytes,
-} from '../common/utils/uuid.util';
-import { getChangedFields } from '../common/utils/check-changed-fields.util';
-import { MoneyConverter } from '../common/utils/money-converter.util';
+} from '../../common/utils/uuid.util';
+import { getChangedFields } from '../../common/utils/check-changed-fields.util';
+import { MoneyConverter } from '../../common/utils/money-converter.util';
 import { ConfigService } from '@nestjs/config';
+
+interface GameUpdateInput {
+  name?: string;
+  description?: string;
+  price?: string;
+  updatedAt?: Date;
+}
 
 @Injectable()
 export class GamesService {
@@ -16,8 +23,8 @@ export class GamesService {
     private readonly configService: ConfigService,
   ) {}
 
-  private prepareUpdateData(changedFields: any) {
-    const updateData: any = {
+  private prepareUpdateData(changedFields: Partial<GameUpdateInput>) {
+    const updateData: Partial<GameUpdateInput> = {
       updatedAt: new Date(),
     };
 
@@ -26,7 +33,7 @@ export class GamesService {
     if (changedFields.description)
       updateData.description = changedFields.description;
 
-    if (changedFields.price) updateData.price = parseInt(changedFields.price);
+    if (changedFields.price) updateData.price = changedFields.price;
 
     return updateData;
   }

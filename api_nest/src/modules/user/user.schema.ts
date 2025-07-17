@@ -15,6 +15,15 @@ const CreateUser = UserSchema.omit({
   updatedAt: true,
 });
 
+const UpdateUser = UserSchema.omit({
+  id: true,
+  email: true,
+  password: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type CreateUserDto = z.infer<typeof CreateUser>;
+export type UpdateUser = z.infer<typeof UpdateUser>;
 
 export { CreateUser };

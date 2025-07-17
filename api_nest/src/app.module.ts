@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { GamesController } from './games/game.controller';
-import { GamesService } from './games/game.service';
+import { GamesController } from './modules/games/game.controller';
+import { GamesService } from './modules/games/game.service';
 import { PrismaService } from './models/prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
-import { UserController } from './user/user.controller';
-import { UserService } from './user/user.service';
+import { UserController } from './modules/user/user.controller';
+import { UserService } from './modules/user/user.service';
 
 @Module({
   imports: [
