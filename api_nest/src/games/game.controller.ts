@@ -19,13 +19,10 @@ import { ZodValidationPipe } from '../models/zod.pipe';
 import { CreateGame, CreateGameDto } from './game.schema';
 import { Response } from 'express';
 import { convertBytesToUuid } from '../common/utils/uuid.util';
-import { ConfigService } from '@nestjs/config';
 
 @Controller('/games')
 export class GamesController {
-  constructor(
-    private readonly gamesService: GamesService,
-  ) {}
+  constructor(private readonly gamesService: GamesService) {}
   private readonly logger = new Logger(GamesController.name);
 
   @Post()

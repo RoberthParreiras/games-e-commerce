@@ -21,17 +21,12 @@ export class GamesService {
       updatedAt: new Date(),
     };
 
-    if (changedFields.name) {
-      updateData.name = changedFields.name;
-    }
+    if (changedFields.name) updateData.name = changedFields.name;
 
-    if (changedFields.description) {
+    if (changedFields.description)
       updateData.description = changedFields.description;
-    }
 
-    if (changedFields.price) {
-      updateData.price = parseInt(changedFields.price);
-    }
+    if (changedFields.price) updateData.price = parseInt(changedFields.price);
 
     return updateData;
   }
@@ -68,9 +63,7 @@ export class GamesService {
       },
     });
 
-    if (!game) {
-      throw new NotFoundException('Game not found');
-    }
+    if (!game) throw new NotFoundException('Game not found');
 
     const gameReturn = {
       ...game,
@@ -126,9 +119,7 @@ export class GamesService {
       where: { id: convertUuidToBytes(id) },
     });
 
-    if (!currentGame) {
-      throw new NotFoundException('Game not found');
-    }
+    if (!currentGame) throw new NotFoundException('Game not found');
 
     const changedFields = getChangedFields(
       {

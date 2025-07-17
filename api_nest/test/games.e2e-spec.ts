@@ -67,19 +67,18 @@ describe('Games (e2e)', () => {
   });
 
   describe('/games/:id (GET)', () => {
-    it('should get a single game by its id', () => {
-      return request(app.getHttpServer())
+    it('should get a single game by its id', async () => {
+      const response = await request(app.getHttpServer())
         .get(`/games/${gameId}`)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toHaveProperty(
-            'message',
-            'Game retrieved successfully',
-          );
-          expect(res.body.game).toBeDefined();
-          expect(res.body.game.id).toEqual(gameId);
-          expect(res.body.game.name).toEqual('E2E Test Game');
-        });
+        .expect(200);
+
+      expect(response.body).toHaveProperty(
+        'message',
+        'Game retrieved successfully',
+      );
+      expect(response.body.game).toBeDefined();
+      expect(response.body.game.id).toEqual(gameId);
+      expect(response.body.game.name).toEqual('E2E Test Game');
     });
 
     it('should return 404 for a non-existent game id', () => {
@@ -117,16 +116,15 @@ describe('Games (e2e)', () => {
   });
 
   describe('/games/:id (DELETE)', () => {
-    it('should delete a game', () => {
-      return request(app.getHttpServer())
+    it('should delete a game', async () => {
+      const response = await request(app.getHttpServer())
         .delete(`/games/${gameId}`)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toHaveProperty(
-            'message',
-            'Game deleted with success',
-          );
-        });
+        .expect(200);
+
+      expect(response.body).toHaveProperty(
+        'message',
+        'Game deleted with success',
+      );
     });
 
     it('should return 404 after a game has been deleted', () => {
