@@ -5,9 +5,11 @@ import { ZodValidationPipe } from '../../models/zod.pipe';
 import { CreateGame } from './game.schema';
 import { HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthGuard } from '../auth/auth.guard';
 
+const id = '2e5ef823-ae50-4f76-bb82-5d3c87fa05da';
 const mockGame = {
-  id: '2e5ef823-ae50-4f76-bb82-5d3c87fa05da',
+  id: id,
   name: 'Game test',
   description: 'A description test',
   image: 'A image test',
@@ -46,6 +48,17 @@ describe('GamesController', () => {
     })
       .overridePipe(new ZodValidationPipe(CreateGame))
       .useValue({})
+      .overrideGuard(AuthGuard)
+      .useValue({
+        canActivate: (context) => {
+          const request = context.switchToHttp().getRequest();
+          request['user'] = {
+            id: id,
+            name: 'Game test',
+          };
+          return true;
+        },
+      })
       .compile();
 
     controller = module.get<GamesController>(GamesController);
@@ -80,13 +93,10 @@ describe('GamesController', () => {
 
   describe('getGame', () => {
     it('should retrieve a single game by id', async () => {
-      await controller.getGame(
-        '2e5ef823-ae50-4f76-bb82-5d3c87fa05da',
-        mockResponse,
-      );
+      await controller.getGame(id, mockResponse);
 
       expect(service.get).toHaveBeenCalledWith({
-        id: '2e5ef823-ae50-4f76-bb82-5d3c87fa05da',
+        id: id,
       });
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.OK);
       expect(mockResponse.json).toHaveBeenCalledWith({
@@ -117,14 +127,10 @@ describe('GamesController', () => {
         description: 'Updated Description test',
         price: '15000',
       };
-      await controller.updateGame(
-        '2e5ef823-ae50-4f76-bb82-5d3c87fa05da',
-        updateDto,
-        mockResponse,
-      );
+      await controller.updateGame(id, updateDto, mockResponse);
 
       expect(service.put).toHaveBeenCalledWith({
-        id: '2e5ef823-ae50-4f76-bb82-5d3c87fa05da',
+        id: id,
         ...updateDto,
       });
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.OK);
@@ -136,13 +142,10 @@ describe('GamesController', () => {
 
   describe('deleteGame', () => {
     it('should delete a game and return a success message', async () => {
-      await controller.deleteGame(
-        '2e5ef823-ae50-4f76-bb82-5d3c87fa05da',
-        mockResponse,
-      );
+      await controller.deleteGame(id, mockResponse);
 
       expect(service.delete).toHaveBeenCalledWith({
-        id: '2e5ef823-ae50-4f76-bb82-5d3c87fa05da',
+        id: id,
       });
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.OK);
       expect(mockResponse.json).toHaveBeenCalledWith({

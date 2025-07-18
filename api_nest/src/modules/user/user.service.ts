@@ -5,8 +5,9 @@ import {
 } from '../../common/utils/uuid.util';
 import { PrismaService } from '../../models/prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
-import * as bcrypt from 'bcrypt';
+
 import { getChangedFields } from '../../common/utils/check-changed-fields.util';
+import { createHashedPassword } from '../../common/utils/hash-password.util';
 
 interface UserUpdateData {
   updatedAt: Date;
@@ -31,7 +32,7 @@ export class UserService {
     const { name, email, password } = params;
 
     const uuid = uuidv4();
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await createHashedPassword(password);
 
     const userCreated = await this.prisma.user.create({
       data: {
@@ -62,6 +63,18 @@ export class UserService {
     };
 
     return userReturn;
+  }
+
+  async getUserByEmail(params: { email: string }) {
+    const { email } = params;
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    return user;
   }
 
   async put(params: { id: string; name: string }) {

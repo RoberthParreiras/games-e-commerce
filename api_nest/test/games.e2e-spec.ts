@@ -2,10 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { authUser, createUser, deleteUser } from './helpers';
 
 describe('Games (e2e)', () => {
   let app: INestApplication;
   let gameId: string;
+  let accessToken: string;
+  let userId: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -15,6 +18,10 @@ describe('Games (e2e)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
+
+    // for user authentication
+    userId = await createUser(app);
+    accessToken = await authUser(app);
   });
 
   afterAll(async () => {
@@ -31,6 +38,7 @@ describe('Games (e2e)', () => {
       };
       const postResponse = await request(app.getHttpServer())
         .post('/games')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(createGameDto)
         .expect(201);
 
@@ -50,6 +58,7 @@ describe('Games (e2e)', () => {
       };
       await request(app.getHttpServer())
         .post('/games')
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(invalidGameDto)
         .expect(400);
     });
@@ -98,6 +107,7 @@ describe('Games (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/games/${gameId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
         .send(updateGameDto)
         .expect(200);
 
@@ -125,6 +135,9 @@ describe('Games (e2e)', () => {
         'message',
         'Game deleted with success',
       );
+
+      // for user deletion
+      await deleteUser(app, userId);
     });
 
     it('should return 404 after a game has been deleted', () => {

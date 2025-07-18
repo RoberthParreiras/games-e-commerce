@@ -12,6 +12,7 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
   UsePipes,
 } from '@nestjs/common';
 import { GamesService } from './game.service';
@@ -19,12 +20,14 @@ import { ZodValidationPipe } from '../../models/zod.pipe';
 import { CreateGame, CreateGameDto, UpdateGameDto } from './game.schema';
 import { Response } from 'express';
 import { convertBytesToUuid } from '../../common/utils/uuid.util';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('/games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
   private readonly logger = new Logger(GamesController.name);
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @UsePipes(new ZodValidationPipe(CreateGame))
   async createGame(
@@ -87,6 +90,7 @@ export class GamesController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   async updateGame(
     @Param('id') id: string,

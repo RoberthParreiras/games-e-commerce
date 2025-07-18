@@ -6,8 +6,8 @@ import {
   convertUuidToBytes,
 } from '../../common/utils/uuid.util';
 import { getChangedFields } from '../../common/utils/check-changed-fields.util';
-import { MoneyConverter } from '../../common/utils/money-converter.util';
 import { ConfigService } from '@nestjs/config';
+import { centsToReal } from '../../common/utils/money-converter.util';
 
 interface GameUpdateInput {
   name?: string;
@@ -108,7 +108,7 @@ export class GamesService {
     const gamesListReturn = gamesList.map((game) => ({
       ...game,
       id: convertBytesToUuid(game.id),
-      price: MoneyConverter.centsToReal(game.price.toNumber()),
+      price: centsToReal(game.price.toNumber()),
     }));
 
     return { gamesListReturn, totalPages };

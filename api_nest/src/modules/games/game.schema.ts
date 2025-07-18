@@ -1,4 +1,4 @@
-import { MoneyConverter } from '../../common/utils/money-converter.util';
+import { realToCents } from '../../common/utils/money-converter.util';
 import { z } from 'zod';
 
 const GameSchema = z.object({
@@ -7,8 +7,7 @@ const GameSchema = z.object({
   description: z.string(),
   image: z.string(),
   price: z.union([z.number(), z.string()]).transform((val) => {
-    if (typeof val === 'number')
-      return MoneyConverter.realToCents(Number(val)).toString();
+    if (typeof val === 'number') return realToCents(Number(val)).toString();
     return val;
   }),
   createdAt: z.date(),
