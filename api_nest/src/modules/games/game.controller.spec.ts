@@ -5,7 +5,7 @@ import { ZodValidationPipe } from '../../models/zod.pipe';
 import { CreateGame } from './game.schema';
 import { HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
-import { AuthGuard } from '../auth/auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 const id = '2e5ef823-ae50-4f76-bb82-5d3c87fa05da';
 const mockGame = {
@@ -48,7 +48,7 @@ describe('GamesController', () => {
     })
       .overridePipe(new ZodValidationPipe(CreateGame))
       .useValue({})
-      .overrideGuard(AuthGuard)
+      .overrideGuard(JwtAuthGuard)
       .useValue({
         canActivate: (context) => {
           const request = context.switchToHttp().getRequest();

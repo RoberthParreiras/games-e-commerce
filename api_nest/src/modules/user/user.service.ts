@@ -8,24 +8,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { getChangedFields } from '../../common/utils/check-changed-fields.util';
 import { createHashedPassword } from '../../common/utils/hash-password.util';
-
-interface UserUpdateData {
-  updatedAt: Date;
-  name?: string;
-}
+import { BaseService } from '../../common/base.service';
 
 @Injectable()
-export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  private prepareUpdateData(changedFields: { name?: string }): UserUpdateData {
-    const updateData: UserUpdateData = {
-      updatedAt: new Date(),
-    };
-
-    if (changedFields.name) updateData.name = changedFields.name;
-
-    return updateData;
+export class UserService extends BaseService {
+  constructor(private readonly prisma: PrismaService) {
+    super();
   }
 
   async create(params: { name: string; email: string; password: string }) {

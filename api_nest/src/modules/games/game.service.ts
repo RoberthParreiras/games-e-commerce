@@ -8,34 +8,15 @@ import {
 import { getChangedFields } from '../../common/utils/check-changed-fields.util';
 import { ConfigService } from '@nestjs/config';
 import { centsToReal } from '../../common/utils/money-converter.util';
-
-interface GameUpdateInput {
-  name?: string;
-  description?: string;
-  price?: string;
-  updatedAt?: Date;
-}
+import { BaseService } from '../../common/base.service';
 
 @Injectable()
-export class GamesService {
+export class GamesService extends BaseService {
   constructor(
-    private prisma: PrismaService,
+    private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
-  ) {}
-
-  private prepareUpdateData(changedFields: Partial<GameUpdateInput>) {
-    const updateData: Partial<GameUpdateInput> = {
-      updatedAt: new Date(),
-    };
-
-    if (changedFields.name) updateData.name = changedFields.name;
-
-    if (changedFields.description)
-      updateData.description = changedFields.description;
-
-    if (changedFields.price) updateData.price = changedFields.price;
-
-    return updateData;
+  ) {
+    super();
   }
 
   async create(params: {
