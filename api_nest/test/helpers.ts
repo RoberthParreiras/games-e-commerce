@@ -1,7 +1,8 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { PrismaService } from '../src/models/prisma/prisma.service';
 
-const UserDto = {
+export const UserDto = {
   name: 'E2E Test User',
   email: 'e2egametest@mail.com',
   password: 'e2etest12345',
@@ -11,7 +12,9 @@ async function createUser(app: INestApplication) {
   const userDto = UserDto;
   const userResponse = await request(app.getHttpServer())
     .post('/user')
-    .send(userDto);
+    .send(userDto)
+    .expect(201);
+
   const userId = userResponse.body.user.id;
 
   return userId;
@@ -27,8 +30,9 @@ async function authUser(app: INestApplication) {
   return accessToken;
 }
 
-async function deleteUser(app: INestApplication, userId: string) {
-  await request(app.getHttpServer()).delete(`/user/${userId}`).expect(200);
+async function deleteAllUsers(app: INestApplication) {
+  const prismaService = app.get(PrismaService);
+  await prismaService.user.deleteMany();
 }
 
-export { createUser, authUser, deleteUser };
+export { createUser, authUser, deleteAllUsers };

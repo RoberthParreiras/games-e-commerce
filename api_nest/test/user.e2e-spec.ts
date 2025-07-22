@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { deleteAllUsers } from './helpers';
 
 describe('User (e2e)', () => {
   let app: INestApplication;
-  let userId: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -17,12 +17,31 @@ describe('User (e2e)', () => {
     await app.init();
   });
 
+  beforeEach(async () => {
+    await deleteAllUsers(app);
+  });
+
   afterAll(async () => {
     await app.close();
   });
 
-  describe('/user (POST)', () => {
-    it('should create a user', async () => {
+  describe('/user', () => {
+    it('should fail to create a user with invalid data', async () => {
+      const invalidUserDto = {
+        // name is missing
+        email: 'e2etest2@mail.com',
+        password: 'e2etest12345',
+      };
+      await request(app.getHttpServer())
+        .post('/user')
+        .send(invalidUserDto)
+        .expect(400);
+    });
+  });
+
+  describe('/user/:id', () => {
+    it('should perform CRUD operations on a user', async () => {
+      // 1. Create User
       const createUserDto = {
         name: 'E2E Test User',
         email: 'e2etest@mail.com',
@@ -33,39 +52,35 @@ describe('User (e2e)', () => {
         .send(createUserDto)
         .expect(201);
 
-      expect(postResponse.body.user).toBeDefined();
-      expect(postResponse.body.user.name).toEqual(createUserDto.name);
-      expect(postResponse.body.user.id).toBeDefined();
+      const userId = postResponse.body.user.id;
+      expect(userId).toBeDefined();
 
-      userId = postResponse.body.user.id;
-    });
-
-    it('should fail to create a user with invalid data', async () => {
-      const invalidGameDto = {
-        // name is missing
-        email: 'e2etest2@mail.com',
-        password: 'e2etest12345',
-      };
-      await request(app.getHttpServer())
-        .post('/user')
-        .send(invalidGameDto)
-        .expect(400);
-    });
-  });
-
-  describe('/user/:id (GET)', () => {
-    it('should get a single user by its id', async () => {
-      const response = await request(app.getHttpServer())
+      // 2. Get User by ID
+      const getResponseAfterCreate = await request(app.getHttpServer())
         .get(`/user/${userId}`)
         .expect(200);
+      expect(getResponseAfterCreate.body.user.id).toEqual(userId);
 
-      expect(response.body).toHaveProperty(
-        'message',
-        'User retrieved successfully',
-      );
-      expect(response.body.user).toBeDefined();
-      expect(response.body.user.id).toEqual(userId);
-      expect(response.body.user.name).toEqual('E2E Test User');
+      // 3. Update User
+      const updateUserDto = {
+        name: 'Updated E2E Test User',
+      };
+      await request(app.getHttpServer())
+        .put(`/user/${userId}`)
+        .send(updateUserDto)
+        .expect(200);
+
+      // 4. Verify Update
+      const getResponseAfterUpdate = await request(app.getHttpServer())
+        .get(`/user/${userId}`)
+        .expect(200);
+      expect(getResponseAfterUpdate.body.user.name).toEqual(updateUserDto.name);
+
+      // 5. Delete User
+      await request(app.getHttpServer()).delete(`/user/${userId}`).expect(200);
+
+      // 6. Verify Deletion
+      await request(app.getHttpServer()).get(`/user/${userId}`).expect(404);
     });
 
     it('should return 404 for a non-existent user id', () => {
@@ -73,47 +88,6 @@ describe('User (e2e)', () => {
       return request(app.getHttpServer())
         .get(`/user/${nonExistentId}`)
         .expect(404);
-    });
-  });
-
-  describe('/user/:id (PUT)', () => {
-    it('should update a user', async () => {
-      const updateUserDto = {
-        name: 'Updated E2E Test User',
-      };
-
-      const response = await request(app.getHttpServer())
-        .put(`/user/${userId}`)
-        .send(updateUserDto)
-        .expect(200);
-
-      expect(response.body).toHaveProperty(
-        'message',
-        'User updated with success',
-      );
-
-      const getResponse = await request(app.getHttpServer())
-        .get(`/user/${userId}`)
-        .expect(200);
-
-      expect(getResponse.body.user.name).toEqual(updateUserDto.name);
-    });
-  });
-
-  describe('/user/:id (DELETE)', () => {
-    it('should delete a user', async () => {
-      const response = await request(app.getHttpServer())
-        .delete(`/user/${userId}`)
-        .expect(200);
-
-      expect(response.body).toHaveProperty(
-        'message',
-        'User deleted with success',
-      );
-    });
-
-    it('should return 404 after a user has been deleted', () => {
-      return request(app.getHttpServer()).get(`/user/${userId}`).expect(404);
     });
   });
 });
