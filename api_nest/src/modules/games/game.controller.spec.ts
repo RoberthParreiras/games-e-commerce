@@ -5,7 +5,7 @@ import { ZodValidationPipe } from '../../models/zod.pipe';
 import { CreateGame } from './game.schema';
 import { HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 
 const id = '2e5ef823-ae50-4f76-bb82-5d3c87fa05da';
 const mockGame = {
@@ -32,7 +32,7 @@ describe('GamesController', () => {
     create: jest.fn(),
     get: jest.fn().mockResolvedValue(mockGame),
     listAll: jest.fn().mockResolvedValue(mockGamesList),
-    put: jest.fn(),
+    patch: jest.fn(),
     delete: jest.fn(),
   };
 
@@ -48,7 +48,7 @@ describe('GamesController', () => {
     })
       .overridePipe(new ZodValidationPipe(CreateGame))
       .useValue({})
-      .overrideGuard(JwtAuthGuard)
+      .overrideGuard(AuthGuard)
       .useValue({
         canActivate: (context) => {
           const request = context.switchToHttp().getRequest();
@@ -129,7 +129,7 @@ describe('GamesController', () => {
       };
       await controller.updateGame(id, updateDto, mockResponse);
 
-      expect(service.put).toHaveBeenCalledWith({
+      expect(service.patch).toHaveBeenCalledWith({
         id: id,
         ...updateDto,
       });

@@ -95,7 +95,7 @@ describe('Games (e2e)', () => {
         price: '12999',
       };
       await request(app.getHttpServer())
-        .put(`/games/${gameId}`)
+        .patch(`/games/${gameId}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .send(updateGameDto)
         .expect(200);

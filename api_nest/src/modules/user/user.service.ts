@@ -65,7 +65,7 @@ export class UserService extends BaseService {
     return user;
   }
 
-  async put(params: { id: string; name: string }) {
+  async patch(params: { id: string; name: string }) {
     const { id, ...updates } = params;
 
     const currentUser = await this.prisma.user.findUnique({

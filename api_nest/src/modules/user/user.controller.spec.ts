@@ -28,7 +28,7 @@ describe('UserController', () => {
   const mockUserService = {
     create: jest.fn(),
     get: jest.fn().mockResolvedValue(mockUser),
-    put: jest.fn(),
+    patch: jest.fn(),
     delete: jest.fn(),
   };
 
@@ -95,7 +95,7 @@ describe('UserController', () => {
       };
       await controller.updateUser(id, updateDto, mockResponse);
 
-      expect(service.put).toHaveBeenCalledWith({
+      expect(service.patch).toHaveBeenCalledWith({
         id: id,
         ...updateDto,
       });

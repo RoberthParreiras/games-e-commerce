@@ -66,7 +66,7 @@ describe('User (e2e)', () => {
         name: 'Updated E2E Test User',
       };
       await request(app.getHttpServer())
-        .put(`/user/${userId}`)
+        .patch(`/user/${userId}`)
         .send(updateUserDto)
         .expect(200);
 

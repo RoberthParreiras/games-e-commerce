@@ -8,8 +8,8 @@ import {
   Logger,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
   Query,
   Res,
   UseGuards,
@@ -20,14 +20,14 @@ import { ZodValidationPipe } from '../../models/zod.pipe';
 import { CreateGame, CreateGameDto, UpdateGameDto } from './game.schema';
 import { Response } from 'express';
 import { convertBytesToUuid } from '../../common/utils/uuid.util';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('/games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
   private readonly logger = new Logger(GamesController.name);
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @Post()
   @UsePipes(new ZodValidationPipe(CreateGame))
   async createGame(
@@ -90,14 +90,14 @@ export class GamesController {
     });
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Put(':id')
+  @UseGuards(AuthGuard)
+  @Patch(':id')
   async updateGame(
     @Param('id') id: string,
     @Body() body: UpdateGameDto,
     @Res() response: Response,
   ) {
-    await this.gamesService.put({
+    await this.gamesService.patch({
       id,
       name: body.name,
       description: body.description,
@@ -113,6 +113,7 @@ export class GamesController {
     });
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   async deleteGame(@Param('id') id: string, @Res() response: Response) {
     await this.gamesService.delete({ id });

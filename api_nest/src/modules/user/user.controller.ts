@@ -6,8 +6,8 @@ import {
   HttpStatus,
   Logger,
   Param,
+  Patch,
   Post,
-  Put,
   Res,
   UsePipes,
 } from '@nestjs/common';
@@ -59,13 +59,13 @@ export class UserController {
     });
   }
 
-  @Put(':id')
+  @Patch(':id')
   async updateUser(
     @Param('id') id: string,
     @Body() body: UpdateUser,
     @Res() response: Response,
   ) {
-    await this.userService.put({ id, name: body.name });
+    await this.userService.patch({ id, name: body.name });
 
     this.logger.log(
       `[${this.updateUser.name}] ${HttpStatus.OK} - User with id: ${id} updated successfully`,

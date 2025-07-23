@@ -95,7 +95,7 @@ export class GamesService extends BaseService {
     return { gamesListReturn, totalPages };
   }
 
-  async put(params: {
+  async patch(params: {
     id: string;
     name?: string;
     description?: string;
