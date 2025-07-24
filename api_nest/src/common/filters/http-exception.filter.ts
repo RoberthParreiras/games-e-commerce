@@ -33,13 +33,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
       ({ status, message } = this.prismaException.catchPrismaError(exception));
     }
 
-    this.logger.error(`[${request.url}] ${status} - ${exception.message}`);
+    this.logger.error(
+      {
+        message: `HTTP Error: ${request.method} ${request.url}`,
+        statusCode: status,
+        error: exception.message,
+      },
+      exception.stack,
+    );
 
     response.status(status).json({
-      statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      message: message,
+      errorInfo: message,
     });
   }
 }

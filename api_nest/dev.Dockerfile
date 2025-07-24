@@ -14,12 +14,12 @@ RUN apt-get update && apt-get install -y dos2unix
 COPY . .
 
 # Fix line endings and make the script executable
-RUN dos2unix ./dev-entrypoint.sh
-RUN chmod +x ./dev-entrypoint.sh
+RUN dos2unix ./dev-prisma-entrypoint.sh
+RUN chmod +x ./dev-prisma-entrypoint.sh
 
 EXPOSE 3000
 
 # Set the entrypoint to run the migration script on startup.
-ENTRYPOINT ["./dev-entrypoint.sh"]
+ENTRYPOINT ["./dev-prisma-entrypoint.sh"]
 
 CMD ["npm", "run", "start:dev", "--", "-b", "swc"]
