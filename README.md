@@ -34,8 +34,7 @@ This repository contains the backend services for a modern Games E-commerce plat
 
 1.  **Clone the repository:**
     ```bash
-    git clone <your-repository-url>
-    cd <your-repository-folder>
+    git clone https://github.com/RoberthParreiras/games-e-commerce.git
     ```
 2.  **Install dependencies for the API Service:**
     ```bash
