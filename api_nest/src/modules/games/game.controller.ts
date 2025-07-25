@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
   HttpStatus,
@@ -21,6 +20,7 @@ import { CreateGame, CreateGameDto, UpdateGameDto } from './game.schema';
 import { Response } from 'express';
 import { convertBytesToUuid } from '../../common/utils/uuid.util';
 import { AuthGuard } from '../auth/auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('/games')
 export class GamesController {
@@ -67,16 +67,22 @@ export class GamesController {
 
   @Get()
   async listAllGames(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
-    page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe)
-    limit: number,
+    @Query('page', new ParseIntPipe({ optional: true }))
+    page: number | undefined,
+    @Query('limitPerPage', new ParseIntPipe({ optional: true }))
+    limitPerPage: number | undefined,
+    @Query('minPrice', new ParseIntPipe({ optional: true }))
+    minPrice: number | undefined,
+    @Query('maxPrice', new ParseIntPipe({ optional: true }))
+    maxPrice: number | undefined,
     @Res() response: Response,
   ) {
     const { gamesListReturn: games, totalPages } =
       await this.gamesService.listAll({
         page,
-        limit,
+        limitPerPage,
+        minPrice,
+        maxPrice,
       });
 
     this.logger.log(

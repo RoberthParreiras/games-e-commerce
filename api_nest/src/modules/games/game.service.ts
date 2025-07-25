@@ -9,6 +9,7 @@ import { getChangedFields } from '../../common/utils/check-changed-fields.util';
 import { ConfigService } from '@nestjs/config';
 import { centsToReal } from '../../common/utils/money-converter.util';
 import { BaseService } from '../../common/base.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class GamesService extends BaseService {
@@ -61,30 +62,45 @@ export class GamesService extends BaseService {
     return gameReturn;
   }
 
-  async listAll({
-    page = this.configService.get<number>('DEFAULT_PAGE'),
-    limit = this.configService.get<number>('DEFAULT_LIMIT'),
-  }: {
+  async listAll(params: {
     page?: number;
-    limit?: number;
+    limitPerPage?: number;
+    minPrice?: number;
+    maxPrice?: number;
   }) {
-    const maxLimit = this.configService.get<number>('DEFAULT_LIMIT');
-    if (limit! < 1) limit = 1;
-    if (limit! > maxLimit!)
-      limit = this.configService.get<number>('DEFAULT_LIMIT');
+    let {
+      page = this.configService.get<number>('DEFAULT_PAGE'),
+      limitPerPage,
+      minPrice,
+      maxPrice,
+    } = params;
+    const maxPageLimit = this.configService.get<number>(
+      'MAX_PAGE_DEFAULT_LIMIT',
+    );
+    if (!limitPerPage || limitPerPage! < 1 || limitPerPage! > maxPageLimit!)
+      limitPerPage = maxPageLimit!;
 
     // skip to the first item of the page
-    const skipNum = (page! - 1) * limit!;
+    const skipNum = (page! - 1) * limitPerPage!;
+    
+    const where: Prisma.GamesWhereInput = {};
+    if (minPrice || maxPrice) {
+      where.price = {
+        ...(minPrice ? { gte: minPrice } : {}),
+        ...(maxPrice ? { lte: maxPrice } : {}),
+      };
+    }
 
     const [gamesList, totalGames] = await this.prisma.$transaction([
       this.prisma.games.findMany({
+        where,
         skip: skipNum,
-        take: limit,
+        take: Number(limitPerPage),
       }),
-      this.prisma.games.count(),
+      this.prisma.games.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(totalGames / limit!);
+    const totalPages = Math.ceil(totalGames / limitPerPage!);
 
     const gamesListReturn = gamesList.map((game) => ({
       ...game,
