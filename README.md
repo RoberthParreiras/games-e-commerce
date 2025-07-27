@@ -54,36 +54,25 @@ This repository contains the backend services for a modern Games E-commerce plat
 
 ## 🐳 Running the Application with Docker
 
-For a streamlined setup, you can run the entire application using Docker Compose. This will start the NestJS API, the database, and other services.
+For a streamlined setup, you can run the entire application using Docker Compose. When you run the script, this will start the databases and other services.
 
 * **Development Mode:**
     (Includes features like hot-reloading for a better development experience)
     ```bash
-    docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+    chmod +x ./start-dev.sh # to grant execute permission. Run this command only once
+    ./start-dev.sh
     ```
 * **Production Mode:**
     (Optimized for performance and stability)
     ```bash
-    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+    chmod +x ./start-prod.sh
+    ./start-prod.sh
     ```
-
----
-
-## 🧪 Testing
-
-To ensure the reliability of the application, you can run the provided tests.
-
-* **API Service Tests:**
+*   **Stopping the Application:**
+    (To stop and remove all the containers)
     ```bash
-    cd api_nest
-    # Run unit tests
-    npm run test
-
-    # Run end-to-end (e2e) tests
-    npm run test:e2e
-
-    # Check test coverage
-    npm run test:cov
+    chmod +x ./stop.sh
+    ./stop.sh
     ```
 
 ---

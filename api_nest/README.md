@@ -79,3 +79,22 @@ The project follows the standard NestJS project structure, which promotes consis
 |-- app.module.ts        # Root application module
 `-- main.ts              # Application entry point
 ```
+
+## 🧪 Testing
+
+To ensure the reliability of the application, you can run the provided tests.
+
+* **API Service Tests:**
+    ```bash
+    cd api_nest
+    # Run unit tests
+    npm run test
+
+    # Run end-to-end (e2e) tests
+    npm run test:e2e
+
+    # Check test coverage
+    npm run test:cov
+    ```
+
+---
