@@ -5,6 +5,7 @@ from datetime import datetime
 
 class ImageModel(BaseModel):
     id: Optional[str] = Field(alias="_id", default=None)
+    user_id: str
     filename: str
     object_name: str
     url: str

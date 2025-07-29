@@ -1,6 +1,8 @@
+from pymongo import AsyncMongoClient
 from os import environ as env
 from minio import Minio
 
+## MINIO configuration
 def create_minio_client():
     MINIO_ENDPOINT = env.get("MINIO_ENDPOINT")
     MINIO_ACCESS_KEY = env.get("MINIO_ACCESS_KEY")
@@ -25,3 +27,8 @@ def create_minio_bucket(minio_client: Minio):
         
     except Exception as e:
         print(e)
+
+## MONGODB configuration
+client: AsyncMongoClient = AsyncMongoClient("mongodb://localhost:27017")
+db = client.get_database("images")
+image_collection = db.get_collection("images")
