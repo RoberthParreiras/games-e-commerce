@@ -2,7 +2,7 @@ from pymongo import AsyncMongoClient
 from os import environ as env
 from minio import Minio
 
-## MINIO configuration
+## minIO configuration
 def create_minio_client():
     MINIO_ENDPOINT = env.get("MINIO_ENDPOINT")
     MINIO_ACCESS_KEY = env.get("MINIO_ACCESS_KEY")
@@ -28,7 +28,15 @@ def create_minio_bucket(minio_client: Minio):
     except Exception as e:
         print(e)
 
-## MONGODB configuration
+# Create a minIO client Singleton for the use of Dependency Injection through the app
+minio_client = create_minio_client()
+
+def get_minio_client():
+    return minio_client
+
+
+
+## MongoDB configuration
 client: AsyncMongoClient = AsyncMongoClient("mongodb://localhost:27017")
 db = client.get_database("images")
 image_collection = db.get_collection("images")

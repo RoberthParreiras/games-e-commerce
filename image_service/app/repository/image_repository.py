@@ -1,12 +1,14 @@
 import os
 import io
-from fastapi import UploadFile
+from fastapi import UploadFile, Depends
 from uuid import uuid4
 from minio import Minio
 from minio.error import S3Error
 
+from ..core.config import get_minio_client
+
 class ImageRepository:
-    def __init__(self, store_object_bucket: Minio):
+    def __init__(self, store_object_bucket: Minio = Depends(get_minio_client)):
         self.bucket = store_object_bucket
         # self.db = db
 
