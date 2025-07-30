@@ -4,13 +4,15 @@ from fastapi import UploadFile, Depends
 from uuid import uuid4
 from minio import Minio
 from minio.error import S3Error
+from pymongo.asynchronous.collection import AsyncCollection 
 
-from ..core.config import get_minio_client
+from ..core.config import get_minio_client, image_collection
+from ..repository.mongo.image import ImageModel
 
 class ImageRepository:
-    def __init__(self, store_object_bucket: Minio = Depends(get_minio_client)):
+    def __init__(self, store_object_bucket: Minio = Depends(get_minio_client), db: AsyncCollection = Depends(lambda: image_collection)):
         self.bucket = store_object_bucket
-        # self.db = db
+        self.db = db
 
     async def create(self, file: UploadFile, user_id: str):
         """
@@ -36,7 +38,28 @@ class ImageRepository:
             )
 
             file_url = f"http://{MINIO_ENDPOINT}/{MINIO_BUCKET}/{object_name}"
-            return file_url
+            
+            image = ImageModel(
+                user_id=user_id,
+                filename=file.filename,
+                object_name=object_name,
+                url=file_url,
+                content_type=file.content_type,
+                size=content_size
+            )
+
+            new_image = await self.db.insert_one(
+                image.model_dump(by_alias=True, exclude={"id"}, exclude_none=True, exclude_unset=True)
+            )
+            created_image = await self.db.find_one(
+                {"_id": new_image.inserted_id}
+            )
+
+            if created_image and "_id" in created_image:
+                created_image["id"] = str(created_image["_id"])
+                del created_image["_id"]
+            
+            return created_image
 
         except S3Error as e:
             print(f"Error uploading to MinIO: {e}")

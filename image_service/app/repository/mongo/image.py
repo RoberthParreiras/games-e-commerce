@@ -3,6 +3,7 @@ from typing import Optional, List
 from uuid import uuid4, UUID
 from datetime import datetime
 
+# for more details https://www.mongodb.com/docs/languages/python/pymongo-driver/current/integrations/fastapi-integration/
 class ImageModel(BaseModel):
     id: Optional[str] = Field(alias="_id", default=None)
     user_id: str

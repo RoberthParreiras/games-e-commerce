@@ -37,6 +37,18 @@ def get_minio_client():
 
 
 ## MongoDB configuration
-client: AsyncMongoClient = AsyncMongoClient("mongodb://localhost:27017")
-db = client.get_database("images")
+def create_mongodb_client():
+    MONGO_HOST = env.get("MONGO_HOST")
+    MONGO_PORT = env.get("MONGO_PORT")
+    
+    client: AsyncMongoClient = AsyncMongoClient(f"mongodb://{MONGO_HOST}:{MONGO_PORT}")
+
+    return client
+
+mongodb_client = create_mongodb_client()
+
+def get_mongodb_client():
+    return mongodb_client
+
+db = mongodb_client.get_database("images")
 image_collection = db.get_collection("images")
