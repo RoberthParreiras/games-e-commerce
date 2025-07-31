@@ -1,12 +1,14 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List
+from pydantic import BaseModel, Field, ConfigDict, BeforeValidator
+from typing import Optional, List, NotRequired, Annotated
 from uuid import uuid4, UUID
 from datetime import datetime
 
+PyObjectId = Annotated[str, BeforeValidator(str)]
+
 # for more details https://www.mongodb.com/docs/languages/python/pymongo-driver/current/integrations/fastapi-integration/
 class ImageModel(BaseModel):
-    id: Optional[str] = Field(alias="_id", default=None)
-    user_id: str
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    user_id: UUID
     filename: str
     object_name: str
     url: str
@@ -17,6 +19,8 @@ class ImageModel(BaseModel):
         populate_by_name = True,
         json_schema_extra={
             "example": {
+                "id": "688b3f182cb8ea197c3a6c75",
+                "user_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
                 "filename": "my_image.jpg",
                 "object_name": "a1b2c3d4-e5f6-5895-1234-567890abcdef.jpg",
                 "url": "http://localhost:9000/images/a1b2c3d4-e5f6-5895-1234-567890abcdef.jpg",

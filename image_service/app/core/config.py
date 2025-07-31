@@ -1,6 +1,7 @@
 from pymongo import AsyncMongoClient
 from os import environ as env
 from minio import Minio
+from bson import CodecOptions, UuidRepresentation
 
 ## minIO configuration
 def create_minio_client():
@@ -51,4 +52,6 @@ def get_mongodb_client():
     return mongodb_client
 
 db = mongodb_client.get_database("images")
-image_collection = db.get_collection("images")
+
+standard_opts: CodecOptions = CodecOptions(uuid_representation=UuidRepresentation.STANDARD)
+image_collection = db.get_collection("images", codec_options=standard_opts)
