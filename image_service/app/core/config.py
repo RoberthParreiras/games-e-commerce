@@ -3,7 +3,8 @@ from os import environ as env
 from minio import Minio
 from bson import CodecOptions, UuidRepresentation
 
-## minIO configuration
+
+# MinIO configuration
 def create_minio_client():
     MINIO_ENDPOINT = env.get("MINIO_ENDPOINT")
     MINIO_ACCESS_KEY = env.get("MINIO_ACCESS_KEY")
@@ -14,44 +15,51 @@ def create_minio_client():
         MINIO_ENDPOINT,
         access_key=MINIO_ACCESS_KEY,
         secret_key=MINIO_SECRET_KEY,
-        secure=True if MINIO_SECURE == "True" else False
+        secure=True if MINIO_SECURE == "True" else False,
     )
     return minio_client
+
 
 def create_minio_bucket(minio_client: Minio):
     MINIO_BUCKET = env.get("MINIO_BUCKET")
 
     try:
-        bucket_exist = minio_client.bucket_exists(MINIO_BUCKET) #type: ignore
+        bucket_exist = minio_client.bucket_exists(MINIO_BUCKET)  # type: ignore
         if not bucket_exist:
-            minio_client.make_bucket(MINIO_BUCKET) #type: ignore
-        
+            minio_client.make_bucket(MINIO_BUCKET)  # type: ignore
+
     except Exception as e:
         print(e)
+
 
 # Create a minIO client Singleton for the use of Dependency Injection through the app
 minio_client = create_minio_client()
 
+
 def get_minio_client():
     return minio_client
-
 
 
 ## MongoDB configuration
 def create_mongodb_client():
     MONGO_HOST = env.get("MONGO_HOST")
     MONGO_PORT = env.get("MONGO_PORT")
-    
+
     client: AsyncMongoClient = AsyncMongoClient(f"mongodb://{MONGO_HOST}:{MONGO_PORT}")
 
     return client
 
+
 mongodb_client = create_mongodb_client()
+
 
 def get_mongodb_client():
     return mongodb_client
 
+
 db = mongodb_client.get_database("images")
 
-standard_opts: CodecOptions = CodecOptions(uuid_representation=UuidRepresentation.STANDARD)
+standard_opts: CodecOptions = CodecOptions(
+    uuid_representation=UuidRepresentation.STANDARD
+)
 image_collection = db.get_collection("images", codec_options=standard_opts)
