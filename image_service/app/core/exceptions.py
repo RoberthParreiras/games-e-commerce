@@ -3,5 +3,6 @@ class CoreException(Exception):
 
     pass
 
+
 class BucketCreationException(CoreException):
     pass

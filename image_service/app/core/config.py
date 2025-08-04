@@ -8,6 +8,7 @@ from .exceptions import BucketCreationException
 
 log = logging.getLogger(__name__)
 
+
 # MinIO configuration
 def create_minio_client():
     MINIO_ENDPOINT = env.get("MINIO_ENDPOINT")
@@ -35,7 +36,7 @@ def create_minio_bucket(minio_client: Minio):
         if not bucket_exist:
             minio_client.make_bucket(MINIO_BUCKET)  # type: ignore
 
-    except Exception as e:
+    except Exception:
         log.critical("Could not create the MinIO bucket")
         raise BucketCreationException("Could not create the MinIO bucket")
 

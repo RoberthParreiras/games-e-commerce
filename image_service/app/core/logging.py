@@ -4,11 +4,13 @@ from enum import StrEnum
 
 LOG_FORMAT_DEBUG = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
+
 class LogLevels(StrEnum):
     info = "INFO"
     warning = "WARNING"
     error = "ERROR"
     debug = "DEBUG"
+
 
 def setup_logging():
     log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
@@ -19,9 +21,5 @@ def setup_logging():
         return
 
     logging.basicConfig(
-        level=log_level,
-        format=LOG_FORMAT_DEBUG,
-        handlers=[logging.StreamHandler()]
+        level=log_level, format=LOG_FORMAT_DEBUG, handlers=[logging.StreamHandler()]
     )
-
-    

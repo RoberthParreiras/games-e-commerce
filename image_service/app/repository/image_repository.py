@@ -17,6 +17,7 @@ from ..repository.exceptions import StorageOperationError, DatabaseOperationErro
 
 log = logging.getLogger(__name__)
 
+
 class ImageRepository:
     _MINIO_BUCKET = os.environ.get("MINIO_BUCKET")
     _MINIO_ENDPOINT = os.environ.get("MINIO_ENDPOINT")

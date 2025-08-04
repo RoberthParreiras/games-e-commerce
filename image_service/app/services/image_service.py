@@ -10,6 +10,7 @@ from .exceptions import (
 
 log = logging.getLogger(__name__)
 
+
 class ImageService:
     def __init__(self, image_repository: ImageRepository = Depends(ImageRepository)):
         self.image_repository = image_repository
@@ -22,7 +23,9 @@ class ImageService:
 
         image_metadata = await self.image_repository.create(file, user_id)
         if not image_metadata:
-            log.error(f"Could not create the image for user_id={user_id}, filename={file.filename}")
+            log.error(
+                f"Could not create the image for user_id={user_id}, filename={file.filename}"
+            )
 
             raise ImageStorageException("Could not create the image")
 
@@ -47,7 +50,7 @@ class ImageService:
         if not image_metadata:
             log.error(f"Image not found: {image_id}")
 
-            raise ImageNotFoundException(f"Image not found")
+            raise ImageNotFoundException("Image not found")
 
         return image_metadata
 
@@ -56,6 +59,6 @@ class ImageService:
         if not image_deleted:
             log.error("Could not delete image with image_id={image_id}")
 
-            raise ImageStorageException(f"Could not delete image")
+            raise ImageStorageException("Could not delete image")
 
         return image_deleted

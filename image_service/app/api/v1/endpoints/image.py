@@ -7,6 +7,7 @@ from ....services.image_service import ImageService
 router = APIRouter()
 log = logging.getLogger(__name__)
 
+
 @router.post(
     "/image/upload/",
     response_description="Add new image",
@@ -84,7 +85,7 @@ async def get_image(image_id: str, image_service: ImageService = Depends(ImageSe
 @router.delete(
     "/image/{image_id}",
     response_description="Delete image",
-    response_model=str,
+    response_model=dict,
     status_code=status.HTTP_200_OK,
     response_model_by_alias=False,
 )
