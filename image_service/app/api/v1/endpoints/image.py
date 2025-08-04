@@ -1,10 +1,11 @@
 from fastapi import UploadFile, APIRouter, status, HTTPException, Depends
+import logging
 
 from ....repository.mongo.image import ImageModel
 from ....services.image_service import ImageService
 
 router = APIRouter()
-
+log = logging.getLogger(__name__)
 
 @router.post(
     "/image/upload/",
@@ -23,6 +24,8 @@ async def create_image(
         return created_image
 
     except Exception as e:
+        log.error(f"An error occurred during file upload: {str(e)}")
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred during file upload: {str(e)}",
@@ -48,6 +51,8 @@ async def update_image(
         updated_image = await image_service.update_image(file, image_id, user_id)
         return updated_image
     except Exception as e:
+        log.error(f"An error occurred during file update: {str(e)}")
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred during file update: {str(e)}",
@@ -68,6 +73,8 @@ async def get_image(image_id: str, image_service: ImageService = Depends(ImageSe
         image = await image_service.get_image(image_id)
         return image
     except Exception as e:
+        log.error(f"An error occurred retrieving file: {str(e)}")
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred retrieving file: {str(e)}",
@@ -86,6 +93,8 @@ async def delete(image_id: str, image_service: ImageService = Depends(ImageServi
         deleted_image = await image_service.delete_image(image_id)
         return deleted_image
     except Exception as e:
+        log.error(f"An error occurred in the deletion file: {str(e)}")
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred in the deletion file: {str(e)}",

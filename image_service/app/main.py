@@ -2,6 +2,10 @@ import os
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
+import logging
+
+from .core.logging import setup_logging
+
 
 dotenv_path = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"
@@ -17,6 +21,9 @@ from .services.exceptions import (
 )
 
 create_minio_bucket(minio_client)
+
+log = logging.getLogger(__name__)
+setup_logging()
 
 app = FastAPI()
 

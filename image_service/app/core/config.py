@@ -2,7 +2,11 @@ from pymongo import AsyncMongoClient
 from os import environ as env
 from minio import Minio
 from bson import CodecOptions, UuidRepresentation
+import logging
 
+from .exceptions import BucketCreationException
+
+log = logging.getLogger(__name__)
 
 # MinIO configuration
 def create_minio_client():
@@ -17,6 +21,9 @@ def create_minio_client():
         secret_key=MINIO_SECRET_KEY,
         secure=True if MINIO_SECURE == "True" else False,
     )
+
+    log.info("MinIO client created with success")
+
     return minio_client
 
 
@@ -29,7 +36,8 @@ def create_minio_bucket(minio_client: Minio):
             minio_client.make_bucket(MINIO_BUCKET)  # type: ignore
 
     except Exception as e:
-        print(e)
+        log.critical("Could not create the MinIO bucket")
+        raise BucketCreationException("Could not create the MinIO bucket")
 
 
 # Create a minIO client Singleton for the use of Dependency Injection through the app
@@ -46,6 +54,8 @@ def create_mongodb_client():
     MONGO_PORT = env.get("MONGO_PORT")
 
     client: AsyncMongoClient = AsyncMongoClient(f"mongodb://{MONGO_HOST}:{MONGO_PORT}")
+
+    log.info("MongoDB client created with success")
 
     return client
 

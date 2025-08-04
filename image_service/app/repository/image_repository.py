@@ -9,11 +9,13 @@ from pymongo.errors import PyMongoError
 from bson import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime
+import logging
 
 from ..core.config import get_minio_client, image_collection
 from ..repository.mongo.image import ImageModel
 from ..repository.exceptions import StorageOperationError, DatabaseOperationError
 
+log = logging.getLogger(__name__)
 
 class ImageRepository:
     _MINIO_BUCKET = os.environ.get("MINIO_BUCKET")
@@ -88,9 +90,13 @@ class ImageRepository:
             return new_image
 
         except S3Error as e:
+            log.error(f"Error uploading file to MinIO: {e}")
+
             raise StorageOperationError(f"Error uploading file to MinIO: {e}") from e
 
         except (PyMongoError, InvalidId) as e:
+            log.error(f"Database error during creation: {e}")
+
             raise DatabaseOperationError(f"Database error during creation: {e}") from e
 
     async def update(self, file: UploadFile, image_id: str, user_id: str):
@@ -134,9 +140,13 @@ class ImageRepository:
             return updated_doc
 
         except S3Error as e:
+            log.error(f"Error updating file to MinIO: {e}")
+
             raise StorageOperationError(f"Error updating file to MinIO: {e}") from e
 
         except (PyMongoError, InvalidId) as e:
+            log.error(f"Database error during update: {e}")
+
             raise DatabaseOperationError(f"Database error during update: {e}") from e
 
     async def get(self, image_id: str):
@@ -145,6 +155,8 @@ class ImageRepository:
             return image
 
         except (PyMongoError, InvalidId) as e:
+            log.error(f"Database error while retrieving: {e}")
+
             raise DatabaseOperationError(f"Database error while retrieving: {e}") from e
 
     async def delete(self, image_id: str):
@@ -164,7 +176,11 @@ class ImageRepository:
             return "Deleted with success"
 
         except S3Error as e:
+            log.error(f"Error deleting file in MinIO: {e}")
+
             raise StorageOperationError(f"Error deleting file in MinIO: {e}") from e
 
         except (PyMongoError, InvalidId) as e:
+            log.error(f"Database error during deletion: {e}")
+
             raise DatabaseOperationError(f"Database error during deletion: {e}") from e
