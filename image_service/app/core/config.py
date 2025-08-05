@@ -12,8 +12,8 @@ log = logging.getLogger(__name__)
 # MinIO configuration
 def create_minio_client():
     MINIO_ENDPOINT = env.get("MINIO_ENDPOINT")
-    MINIO_ACCESS_KEY = env.get("MINIO_ACCESS_KEY")
-    MINIO_SECRET_KEY = env.get("MINIO_SECRET_KEY")
+    MINIO_ACCESS_KEY = env.get("MINIO_ROOT_USER")
+    MINIO_SECRET_KEY = env.get("MINIO_ROOT_PASSWORD")
     MINIO_SECURE = env.get("MINIO_SECURE")
 
     minio_client = Minio(
@@ -53,8 +53,12 @@ def get_minio_client():
 def create_mongodb_client():
     MONGO_HOST = env.get("MONGO_HOST")
     MONGO_PORT = env.get("MONGO_PORT")
+    MONGO_USER = env.get("MONGO_INITDB_ROOT_USERNAME")
+    MONGO_PASSWORD = env.get("MONGO_INITDB_ROOT_PASSWORD")
 
-    client: AsyncMongoClient = AsyncMongoClient(f"mongodb://{MONGO_HOST}:{MONGO_PORT}")
+    client: AsyncMongoClient = AsyncMongoClient(
+        f"mongodb://{MONGO_USER}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/?authSource=admin"
+    )
 
     log.info("MongoDB client created with success")
 
