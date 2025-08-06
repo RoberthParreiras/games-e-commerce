@@ -92,7 +92,7 @@ async def get_image(image_id: str, image_service: ImageService = Depends(ImageSe
 async def delete(image_id: str, image_service: ImageService = Depends(ImageService)):
     try:
         deleted_image = await image_service.delete_image(image_id)
-        return {"message": deleted_image} 
+        return {"message": deleted_image}
     except Exception as e:
         log.error(f"An error occurred in the deletion file: {str(e)}")
 

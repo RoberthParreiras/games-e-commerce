@@ -1,12 +1,10 @@
 import pytest
-import httpx
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 from fastapi.testclient import TestClient
 
 from ..main import app
 from ..repository.image_repository import ImageRepository
-from ..services.image_service import ImageService
 
 
 @pytest.fixture
@@ -97,7 +95,7 @@ def test_update_image_success(mock_image_repository):
     files = {"file": ("new_image.png", file_content, "image/png")}
     params = {
         "user_id": "a1b2c3d4-e5f6-5895-1234-567890abcdef",
-        "image_id": "68909019c7ce69410acefca8",
+        "image_id": image_id,
     }
     mock_image_repository.update.return_value = expected_metadata
 

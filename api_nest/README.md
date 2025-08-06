@@ -80,6 +80,29 @@ The project follows the standard NestJS project structure, which promotes consis
 `-- main.ts              # Application entry point
 ```
 
+## 🐳 Running the Application with Docker
+
+For a streamlined setup, you can run the entire application using Docker Compose. When you run the script, this will start the databases and other services.
+
+* **Development Mode:**
+    (Includes features like hot-reloading for a better development experience)
+    ```bash
+    chmod +x ./start-dev.sh # to grant execute permission. Run this command only once
+    ./start-dev.sh
+    ```
+* **Production Mode:**
+    (Optimized for performance and stability)
+    ```bash
+    chmod +x ./start-prod.sh
+    ./start-prod.sh
+    ```
+*   **Stopping the Application:**
+    (To stop and remove all the containers)
+    ```bash
+    chmod +x ./stop.sh
+    ./stop.sh
+    ```
+
 ## 🧪 Testing
 
 To ensure the reliability of the application, you can run the provided tests.

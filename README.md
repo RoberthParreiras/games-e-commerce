@@ -21,58 +21,9 @@ This repository contains the backend services for a modern Games E-commerce plat
 
 ---
 
-## 🔧 Getting Started
+## 📖 Service Documentation
 
-### Prerequisites
+For detailed instructions on setting up and running each service, please refer to their respective `README.md` files:
 
-* [Node.js](https://nodejs.org/en/) (v20 or higher)
-* [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-* [Python](https://www.python.org/downloads/) (v3.12 or higher)
-* [Docker](https://www.docker.com/products/docker-desktop/) and [Docker Compose](https://docs.docker.com/compose/install/)
-
-### Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/RoberthParreiras/games-e-commerce.git
-    ```
-2.  **Install dependencies for the API Service:**
-    ```bash
-    cd api_nest
-    npm install
-    ```
-3.  **Install dependencies for the Image Service:**
-    ```bash
-    cd ../image_service
-    # It's recommended to use a virtual environment
-    python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-    pip install -r requirements.txt
-    ```
-
----
-
-## 🐳 Running the Application with Docker
-
-For a streamlined setup, you can run the entire application using Docker Compose. When you run the script, this will start the databases and other services.
-
-* **Development Mode:**
-    (Includes features like hot-reloading for a better development experience)
-    ```bash
-    chmod +x ./start-dev.sh # to grant execute permission. Run this command only once
-    ./start-dev.sh
-    ```
-* **Production Mode:**
-    (Optimized for performance and stability)
-    ```bash
-    chmod +x ./start-prod.sh
-    ./start-prod.sh
-    ```
-*   **Stopping the Application:**
-    (To stop and remove all the containers)
-    ```bash
-    chmod +x ./stop.sh
-    ./stop.sh
-    ```
-
----
+*   **[API Service](./api_nest/README.md)**
+*   **[Image Service](./image_service/README.md)**
