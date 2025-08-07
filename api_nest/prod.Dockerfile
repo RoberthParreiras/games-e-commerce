@@ -17,6 +17,7 @@ FROM dependencies AS builder
 
 COPY . .
 
+RUN npx prisma generate --schema=./src/models/prisma/schema.prisma
 RUN npm run build
 
 # --- Production Stage ---
