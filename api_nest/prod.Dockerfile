@@ -17,6 +17,7 @@ FROM dependencies AS builder
 
 COPY . .
 
+RUN npx prisma generate --schema=./src/models/prisma/schema.prisma
 RUN npm run build
 
 # --- Production Stage ---
@@ -32,7 +33,7 @@ COPY prod-prisma-entrypoint.sh .
 RUN dos2unix ./prod-prisma-entrypoint.sh
 RUN chmod +x ./prod-prisma-entrypoint.sh
 
-COPY --from=builder /usr/src/app/src/models/prisma/schema.prisma ./prisma/schema.prisma
+COPY --from=builder /usr/src/app/src/models/prisma ./prisma
 
 COPY package*.json ./
 
@@ -44,6 +45,7 @@ COPY --from=builder --chown=node:nodejs /usr/src/app/dist ./dist
 RUN chown node:node ./prod-prisma-entrypoint.sh
 USER node
 
+ENV HOST=0.0.0.0
 EXPOSE 3000
 
 # Set the entrypoint to run the migration script on startup.

@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: prod.Dockerfile
+    mem_limit: 2048m
+    mem_reservation: 1024m
     ports:
       - "8000:8000"
     env_file:
