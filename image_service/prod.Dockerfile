@@ -27,7 +27,9 @@ WORKDIR /app
 # Create a non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser
 
+COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
 COPY --from=builder --chown=appuser:appuser /app/.venv ./.venv
+COPY --chown=appuser:appuser ./pyproject.toml .
 COPY --chown=appuser:appuser ./app ./app
 
 # Switch to the non-root user

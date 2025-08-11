@@ -1,0 +1,156 @@
+pipeline {
+    agent none
+
+    options {
+        skipDefaultCheckout true
+    }
+
+    environment {
+        GITHUB_TOKEN = credentials('github-pat-token')
+
+        MINIO_ENDPOINT = credentials('MINIO_ENDPOINT')
+        MINIO_ROOT_USER = credentials('MINIO_ROOT_USER')
+        MINIO_ROOT_PASSWORD = credentials('MINIO_ROOT_PASSWORD')
+        MINIO_BUCKET = credentials('MINIO_BUCKET')
+        MINIO_SECURE = credentials('MINIO_SECURE')
+
+        MONGO_HOST = credentials('MONGO_HOST')
+        MONGO_PORT = credentials('MONGO_PORT')
+        MONGO_INITDB_ROOT_USERNAME = credentials('MONGO_INITDB_ROOT_USERNAME')
+        MONGO_INITDB_ROOT_PASSWORD = credentials('MONGO_INITDB_ROOT_PASSWORD')
+
+        // --- Docker Compose Files ---
+        COMPOSE_FILES = '--project-directory . --env-file /dev/null -f image_service/docker-compose.yml -f image_service/docker-compose.prod.yml'
+    }
+
+    stages {
+        stage('Run Pipeline in Container') {
+            agent {
+                docker {
+                    image 'docker:24.0-cli'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock --user root --network host'
+                }
+            }
+
+            stages {
+                stage('Checkout Source') {
+                    steps {
+                        // Jenkins's Git plugin will automatically use GITHUB_TOKEN
+                        // for authenticated access when checking out the code
+                        checkout ([
+                            $class: 'GitSCM',
+                            branches: scm.branches,
+                            userRemoteConfigs: [[
+                                credentialsId: 'github-pat-token',
+                                url: scm.userRemoteConfigs[0].url
+                            ]]
+                        ])
+                    }
+                }
+
+                stage('Build Service') {
+                    steps {
+                        script {
+                            echo 'Building service...'
+                            dir('image_service') {
+                                sh 'docker build -t games-e-commerce-image_main-app -f prod.Dockerfile .'
+                            }
+                        }
+                    }
+                }
+
+                stage('Start Dependencies for Testing') {
+                    steps {
+                        script {
+                            sh'''
+                                echo "MINIO_ENDPOINT=${MINIO_ENDPOINT}" >> .env
+                                echo "MINIO_ROOT_USER=${MINIO_ROOT_USER}" >> .env
+                                echo "MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}" >> .env
+                                echo "MINIO_BUCKET=${MINIO_BUCKET}" >> .env
+                                echo "MINIO_SECURE=${MINIO_SECURE}" >> .env
+                                echo "MONGO_HOST=${MONGO_HOST}" >> .env
+                                echo "MONGO_PORT=${MONGO_PORT}" >> .env
+                                echo "MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}" >> .env
+                                echo "MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}" >> .env
+                            '''
+
+                            def composeFiles = env.COMPOSE_FILES.replace('--env-file /dev/null', '--env-file .env')
+
+                            echo 'Cleaning up any old containers before starting'
+                            sh "docker compose ${composeFiles} down --remove-orphans || true"
+
+                            echo 'Starting database and dependency containers...'
+                            sh "docker compose ${composeFiles} up -d --no-build"
+                        }
+                    }
+                }
+
+                stage('Run Unit Tests') {
+                    steps {
+                        script {
+                            echo 'Waiting for services to be ready...'
+
+                            // This script waits for the services to become available before running tests.
+                            sh '''
+                                TIMEOUT=120
+                                INTERVAL=5
+                                ELAPSED=0
+
+                                echo "Waiting for MongoDB on localhost:\${MONGO_PORT}..."
+                                while ! nc -z localhost \${MONGO_PORT}; do
+                                    if [ \$ELAPSED -ge \$TIMEOUT ]; then
+                                        echo "Timed out waiting for MongoDB."
+                                        exit 1
+                                    fi
+                                    sleep \$INTERVAL
+                                    ELAPSED=\$((ELAPSED + INTERVAL))
+                                done
+                                echo "MongoDB is up!"
+
+                                ELAPSED=0
+
+                                echo "Waiting for MinIO on localhost:9000..."
+                                while ! nc -z localhost 9000; do
+                                    if [ \$ELAPSED -ge \$TIMEOUT ]; then
+                                        echo "Timed out waiting for MinIO."
+                                        exit 1
+                                    fi
+                                    sleep \$INTERVAL
+                                    ELAPSED=\$((ELAPSED + INTERVAL))
+                                done
+                                echo "MinIO is up!"
+
+                                echo "Waiting for image service..."
+                                ELAPSED=0
+                                while ! docker compose ${COMPOSE_FILES} ps app | grep -q "Up"; do
+                                    if [ \$ELAPSED -ge \$TIMEOUT ]; then
+                                        echo "Timed out waiting for image service."
+                                        echo "--- image_service logs ---"
+                                        docker compose ${COMPOSE_FILES} logs games-e-commerce-image_main-app || echo "Could not retrieve logs for image_service."
+                                        exit 1
+                                    fi
+                                    sleep \$INTERVAL
+                                    ELAPSED=\$((ELAPSED + INTERVAL))
+                                done
+                                echo "image service is running!"
+                            '''
+
+                            echo 'Running tests...'
+
+                            sh "docker compose ${env.COMPOSE_FILES} exec -T --user root app uv sync"
+                            sh "docker compose ${env.COMPOSE_FILES} exec -T app pytest"
+                        }
+                    }
+                }
+
+            // when using a docker hub alike, you may want to add a stage for deployment
+            // stage('Deploy to Production') {
+            //     steps {
+            //         script {
+            //         }
+            //     }
+            // }
+            }
+        }
+    }
+}

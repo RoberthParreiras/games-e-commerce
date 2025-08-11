@@ -108,9 +108,14 @@ describe('GamesController', () => {
 
   describe('listAllGames', () => {
     it('should list all games with pagination', async () => {
-      await controller.listAllGames(1, 10, mockResponse);
+      const page = 1;
+      const limitPerPage = 10;
+      const minPrice = 1;
+      const maxPrice = 20000;
 
-      expect(service.listAll).toHaveBeenCalledWith({ page: 1, limit: 10 });
+      await controller.listAllGames(page, limitPerPage, minPrice, maxPrice, mockResponse);
+
+      expect(service.listAll).toHaveBeenCalledWith({ page, limitPerPage, minPrice, maxPrice });
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.OK);
       expect(mockResponse.json).toHaveBeenCalledWith({
         message: 'List games with success',

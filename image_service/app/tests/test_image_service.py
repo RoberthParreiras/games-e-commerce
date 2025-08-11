@@ -109,7 +109,7 @@ def test_update_image_success(mock_image_repository):
 
 def test_delete_image_success(mock_image_repository):
     image_id = "68909019c7ce69410acefca8"
-    expected_metadata = {"message": "Image deleted successfully"}
+    expected_metadata = "Image deleted successfully"
     mock_image_repository.delete.return_value = expected_metadata
 
     client = TestClient(app)

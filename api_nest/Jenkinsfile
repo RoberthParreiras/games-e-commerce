@@ -1,137 +1,195 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:24.0-cli'
-            args '-v /var/run/docker.sock:/var/run/docker.sock --user root --network host'
-        }
+    agent none
+
+    options {
+        skipDefaultCheckout true
     }
 
     environment {
-        DATABASE_URL = credentials('DATABASE_URL')
-        MYSQL_ROOT_PASSWORD = credentials('MYSQL_ROOT_PASSWORD')
-        MYSQL_DATABASE = credentials('MYSQL_DATABASE')
-        MYSQL_USER = credentials('MYSQL_USER')
-
-        REDIS_HOST = credentials('REDIS_HOST')
-        REDIS_PORT = credentials('REDIS_PORT')
-
-        JWT_SECRET = credentials('JWT_SECRET')
-
-        DEFAULT_PAGE = credentials('DEFAULT_PAGE')
-        MAX_PAGE_DEFAULT_LIMIT = credentials('MAX_PAGE_DEFAULT_LIMIT')
+        GITHUB_TOKEN = credentials('github-pat-token')
 
         // --- Docker Compose Files ---
         COMPOSE_FILES = '--project-directory . --env-file /dev/null -f api_nest/docker-compose.yml -f api_nest/docker-compose.prod.yml'
     }
 
     stages {
-        stage('Build Service') {
-            steps {
-                script {
-                    echo 'Building service...'
-                    dir('api_nest') {
-                        sh 'docker build -t games-e-commerce-api_main-app -f prod.Dockerfile .'
+        stage('Run Pipeline in Container') {
+            agent {
+                docker {
+                    image 'docker:24.0-cli'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock --user root --network host'
+                }
+            }
+
+            stages {
+                 stage('Checkout Source') {
+                    steps {
+                        // Jenkins's Git plugin will automatically use GITHUB_TOKEN
+                        // for authenticated access when checking out the code
+                        checkout ([
+                            $class: 'GitSCM',
+                            branches: scm.branches,
+                            userRemoteConfigs: [[
+                                credentialsId: 'github-pat-token',
+                                url: scm.userRemoteConfigs[0].url
+                            ]]
+                        ])
+                    }
+                }
+
+                stage('Build Service') {
+                    steps {
+                        script {
+                            echo 'Building service...'
+                            dir('api_nest') {
+                                sh 'docker build -t games-e-commerce-api_main-app -f prod.Dockerfile .'
+                            }
+                        }
+                    }
+                }
+
+                stage('Start Dependencies for Testing') {
+                    steps {
+                        script {
+                            withCredentials([
+                                string(credentialsId: 'DATABASE_URL', variable: 'DATABASE_URL'),
+                                string(credentialsId: 'MYSQL_ROOT_PASSWORD', variable: 'MYSQL_ROOT_PASSWORD'),
+                                string(credentialsId: 'MYSQL_DATABASE', variable: 'MYSQL_DATABASE'),
+                                string(credentialsId: 'MYSQL_USER', variable: 'MYSQL_USER'),
+                                string(credentialsId: 'REDIS_HOST', variable: 'REDIS_HOST'),
+                                string(credentialsId: 'REDIS_PORT', variable: 'REDIS_PORT'),
+                                string(credentialsId: 'JWT_SECRET', variable: 'JWT_SECRET'),
+                                string(credentialsId: 'DEFAULT_PAGE', variable: 'DEFAULT_PAGE'),
+                                string(credentialsId: 'MAX_PAGE_DEFAULT_LIMIT', variable: 'MAX_PAGE_DEFAULT_LIMIT')
+                            ]) {
+                                sh '''
+                                    echo "DATABASE_URL=${DATABASE_URL}" > .env
+                                    echo "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}" >> .env
+                                    echo "MYSQL_DATABASE=${MYSQL_DATABASE}" >> .env
+                                    echo "MYSQL_USER=${MYSQL_USER}" >> .env
+                                    echo "REDIS_HOST=${REDIS_HOST}" >> .env
+                                    echo "REDIS_PORT=${REDIS_PORT}" >> .env
+                                    echo "JWT_SECRET=${JWT_SECRET}" >> .env
+                                    echo "DEFAULT_PAGE=${DEFAULT_PAGE}" >> .env
+                                    echo "MAX_PAGE_DEFAULT_LIMIT=${MAX_PAGE_DEFAULT_LIMIT}" >> .env
+                                '''
+
+                                def composeFiles = env.COMPOSE_FILES.replace('--env-file /dev/null', '--env-file .env')
+
+                                echo 'Cleaning up any old containers before starting...'
+                                sh "docker compose ${composeFiles} down --remove-orphans || true"
+
+                                echo 'Starting database and dependency containers...'
+                                sh "docker compose ${composeFiles} run -d --name api_nest-app-1 --service-ports --entrypoint 'tail -f /dev/null' app"
+                                sh "docker compose ${composeFiles} up -d --no-build --no-recreate db redis"
+                            }
+                        }   
+                    }
+                }
+
+                stage('Run Unit and E2E Tests') {
+                    steps {
+                        script {
+                            withCredentials([
+                                string(credentialsId: 'DATABASE_URL', variable: 'DATABASE_URL'),
+                                string(credentialsId: 'REDIS_PORT', variable: 'REDIS_PORT'),
+                            ]) {
+                                echo 'Waiting for services to be ready...'
+
+                                // This script waits for the services to become available before running tests.
+                                sh '''
+                                    TIMEOUT=120
+                                    INTERVAL=5
+                                    
+                                    echo "Waiting for MySQL..."
+                                    # Parse the port from the URL
+                                    DB_PORT=\$(echo \$DATABASE_URL | awk -F'[@:/]' '{print \$7}')
+
+                                    ELAPSED=0
+                                    # Connect to localhost since the agent is on the host network
+                                    while ! nc -z localhost \$DB_PORT; do
+                                        if [ \$ELAPSED -ge \$TIMEOUT ]; then
+                                            echo "Timed out waiting for MySQL."
+                                            exit 1
+                                        fi
+                                        sleep \$INTERVAL
+                                        ELAPSED=\$((ELAPSED + INTERVAL))
+                                    done
+                                    echo "MySQL is up!"
+
+                                    # Reset timer for next service
+                                    ELAPSED=0
+                                    
+                                    echo "Waiting for Redis on localhost:\${REDIS_PORT}..."
+                                    while ! nc -z localhost \${REDIS_PORT}; do
+                                        if [ \$ELAPSED -ge \$TIMEOUT ]; then
+                                            echo "Timed out waiting for Redis."
+                                            exit 1
+                                        fi
+                                        sleep \$INTERVAL
+                                        ELAPSED=\$((ELAPSED + INTERVAL))
+                                    done
+                                    echo "Redis is up!"
+
+                                    echo "Waiting for app service..."
+                                    ELAPSED=0
+                                    while [ -z "$(docker ps --filter 'name=api_nest-app-1' --filter 'status=running')" ]; do
+                                        if [ \$ELAPSED -ge \$TIMEOUT ]; then
+                                            echo "Timed out waiting for app service."
+                                            echo "--- api_nest logs ---"
+                                            docker compose ${COMPOSE_FILES} logs app || echo "Could not retrieve logs for app."
+                                            exit 1
+                                        fi
+                                        sleep \$INTERVAL
+                                        ELAPSED=\$((ELAPSED + INTERVAL))
+                                    done
+                                    echo "app service is running!"
+                                '''
+
+                                echo 'Running tests...'
+
+                                // Explicitly set the working directory inside the container for all exec commands
+                                def workdir = "/usr/src/app"
+
+                                // 1. Copy the source code from the workspace into the running container.
+                                // The 'api_nest/.' ensures we copy the contents of the api_nest directory.
+                                sh "docker cp api_nest/. api_nest-app-1:${workdir}"
+
+                                // 2. Install dependencies, including devDependencies.
+                                sh "docker exec --user root --workdir ${workdir} -e NODE_ENV=development api_nest-app-1 npm ci"
+                                
+                                // 3. Fix permissions.
+                                sh "docker exec --user root --workdir ${workdir} api_nest-app-1 chown -R node:node ."
+
+                                // 4. Verify jest executable exists
+                                echo "Verifying jest executable exists..."
+                                sh "docker exec --workdir ${workdir} api_nest-app-1 ls -l ./node_modules/.bin/jest"
+
+                                // 5. Run the tests.
+                                sh "docker exec --workdir ${workdir} api_nest-app-1 ./node_modules/.bin/jest"
+                                sh "docker exec --workdir ${workdir} api_nest-app-1 npm run test:e2e"
+                            }
+                        }
+                    }
+                }
+
+                // when using a docker hub alike, you may want to add a stage for deployment
+                // stage('Deploy to Production') {
+                //     steps {
+                //         script {
+                //         }
+                //     }
+                // }
+            }
+
+            post {
+                always {
+                    script {
+                        echo 'Pipeline finished. Cleaning up all containers...'
+                        sh "docker compose ${COMPOSE_FILES} down --remove-orphans || true"
                     }
                 }
             }
-        }
-
-        stage('Start Dependencies for Testing') {
-            steps {
-                script {
-                    sh """
-                        echo "DATABASE_URL=${env.DATABASE_URL}" > .env
-                        echo "MYSQL_ROOT_PASSWORD=${env.MYSQL_ROOT_PASSWORD}" >> .env
-                        echo "MYSQL_DATABASE=${env.MYSQL_DATABASE}" >> .env
-                        echo "MYSQL_USER=${env.MYSQL_USER}" >> .env
-                        echo "REDIS_HOST=${env.REDIS_HOST}" >> .env
-                        echo "REDIS_PORT=${env.REDIS_PORT}" >> .env
-                        echo "JWT_SECRET=${env.JWT_SECRET}" >> .env
-                        echo "DEFAULT_PAGE=${env.DEFAULT_PAGE}" >> .env
-                        echo "MAX_PAGE_DEFAULT_LIMIT=${env.MAX_PAGE_DEFAULT_LIMIT}" >> .env
-                    """
-
-                    def composeFiles = env.COMPOSE_FILES.replace('--env-file /dev/null', '--env-file .env')
-
-                    echo 'Cleaning up any old containers before starting...'
-                    sh "docker compose ${composeFiles} down --remove-orphans || true"
-
-                    echo 'Starting database and dependency containers...'
-                    sh "docker compose ${composeFiles} up -d --no-build"
-                }
-            }
-        }
-
-        stage('Run Unit and E2E Tests') {
-            steps {
-                script {
-                    echo 'Waiting for services to be ready...'
-
-                    // This script waits for the services to become available before running tests.
-                    sh """
-                        TIMEOUT=120
-                        INTERVAL=5
-                        
-                        echo "Waiting for MySQL..."
-                        # Parse the port from the URL
-                        DB_PORT=\$(echo \$DATABASE_URL | awk -F'[@:/]' '{print \$7}')
-
-                        ELAPSED=0
-                        # Connect to localhost since the agent is on the host network
-                        while ! nc -z localhost \$DB_PORT; do
-                            if [ \$ELAPSED -ge \$TIMEOUT ]; then
-                                echo "Timed out waiting for MySQL."
-                                exit 1
-                            fi
-                            sleep \$INTERVAL
-                            ELAPSED=\$((ELAPSED + INTERVAL))
-                        done
-                        echo "MySQL is up!"
-
-                        # Reset timer for next service
-                        ELAPSED=0
-                        
-                        echo "Waiting for Redis on localhost:\${REDIS_PORT}..."
-                        while ! nc -z localhost \${REDIS_PORT}; do
-                            if [ \$ELAPSED -ge \$TIMEOUT ]; then
-                                echo "Timed out waiting for Redis."
-                                exit 1
-                            fi
-                            sleep \$INTERVAL
-                            ELAPSED=\$((ELAPSED + INTERVAL))
-                        done
-                        echo "Redis is up!"
-
-                        echo "Waiting for app service..."
-                        ELAPSED=0
-                        while ! docker compose ${env.COMPOSE_FILES} ps app | grep -q "Up"; do
-                            if [ \$ELAPSED -ge \$TIMEOUT ]; then
-                                echo "Timed out waiting for app service."
-                                echo "--- api_nest logs ---"
-                                docker compose ${env.COMPOSE_FILES} logs app || echo "Could not retrieve logs for app."
-                                exit 1
-                            fi
-                            sleep \$INTERVAL
-                            ELAPSED=\$((ELAPSED + INTERVAL))
-                        done
-                        echo "app service is running!"
-                    """
-
-                    echo 'Running tests...'
-
-                    // sh "docker compose ${env.OMPOSE_FILES} exec -T --user root app npm ci"
-                    // sh "docker compose ${env.COMPOSE_FILES} exec -T app npm test"
-                    // sh "docker compose ${env.COMPOSE_FILES} exec -T app npm test:e2e"
-                }
-            }
-        }
-
-        // when using a docker hub alike, you may want to add a stage for deployment
-        // stage('Deploy to Production') {
-        //     steps {
-        //         script {
-        //         }
-        //     }
-        // }
+        }   
     }
 }
