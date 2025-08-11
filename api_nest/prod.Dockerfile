@@ -45,7 +45,6 @@ COPY --from=builder --chown=node:nodejs /usr/src/app/dist ./dist
 RUN chown node:node ./prod-prisma-entrypoint.sh
 USER node
 
-ENV HOST=0.0.0.0
 EXPOSE 3000
 
 # Set the entrypoint to run the migration script on startup.
