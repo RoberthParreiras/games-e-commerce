@@ -151,6 +151,15 @@ pipeline {
             //     }
             // }
             }
+
+            post {
+                always {
+                    script {
+                        echo 'Pipeline finished. Cleaning up all containers...'
+                        sh "docker compose ${COMPOSE_FILES} down --remove-orphans || true"
+                    }
+                }
+            }
         }
     }
 }

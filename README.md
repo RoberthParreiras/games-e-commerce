@@ -27,3 +27,44 @@ For detailed instructions on setting up and running each service, please refer t
 
 *   **[API Service](./api_nest/README.md)**
 *   **[Image Service](./image_service/README.md)**
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+This project includes a `Jenkinsfile` to set up a CI/CD pipeline using [Jenkins](https://www.jenkins.io/). This allows for automated building, testing, and deployment of the services.
+
+### Running the Jenkins Pipeline
+
+1.  **Setup Jenkins:** You could use this Dockerfile to create a Jenkins that runs Docker:
+```bash
+# Use the official Jenkins LTS image as a base
+FROM jenkins/jenkins:lts-jdk17
+
+# Switch to root user to install software
+USER root
+
+# Install dependencies and Docker's GPG key
+RUN apt-get update && apt-get install -y curl gnupg lsb-release && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+# Add the Docker repository to Apt sources
+RUN echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker CLI and Docker Compose
+RUN apt-get update && apt-get install -y docker-ce-cli docker-compose-plugin
+
+# Switch back to the jenkins user
+USER jenkins
+```
+2.  **Run the Jenkins using docker:** Here is an example of how to run:
+```bash
+docker run -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock --group-add $(getent group docker | cut -d: -f3) --name jenkins docker-with-jenkins
+```
+3.  **Install the Docker Pipeline plugin**
+4.  **Include a GitHub PAT for credentials**
+5.  **Include the environment variables in the Jenkins Dashboard**
+6.  **Run the Pipeline**
