@@ -1,10 +1,13 @@
 from fastapi import UploadFile, APIRouter, status, HTTPException, Depends
+from fastapi.security import HTTPBearer
 import logging
 
 from ....repository.mongo.image import ImageModel
 from ....services.image_service import ImageService
+from ....utilities.current_user_id import get_current_user_id
 
-router = APIRouter()
+bearer_scheme = HTTPBearer()
+router = APIRouter(dependencies=[Depends(bearer_scheme)])
 log = logging.getLogger(__name__)
 
 
@@ -16,9 +19,9 @@ log = logging.getLogger(__name__)
     response_model_by_alias=False,
 )
 async def create_image(
-    user_id: str,
     file: UploadFile,
     image_service: ImageService = Depends(ImageService),
+    user_id: str = Depends(get_current_user_id),
 ):
     try:
         created_image = await image_service.create_image(file=file, user_id=user_id)

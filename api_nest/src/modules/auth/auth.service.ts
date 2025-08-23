@@ -4,12 +4,13 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserService } from '../user/user.service';
-import { getHashedPassword } from '../../common/utils/hash-password.util';
 import { JwtService } from '@nestjs/jwt';
-import { convertBytesToUuid } from '../../common/utils/uuid.util';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+
+import { UserService } from '../user/user.service';
+import { getHashedPassword } from '../../common/utils/hash-password.util';
+import { convertBytesToUuid } from '../../common/utils/uuid.util';
 
 @Injectable()
 export class AuthService {
@@ -39,7 +40,7 @@ export class AuthService {
   }
 
   async signOut(accessToken: string) {
-    const decoded = this.jwtService.decode(accessToken) as { exp: number };
+    const decoded = this.jwtService.decode(accessToken);
     if (decoded && decoded.exp) {
       const expiresin = decoded.exp * 1000 - Date.now(); // calculate remaining time in milliseconds
       if (expiresin > 0) {

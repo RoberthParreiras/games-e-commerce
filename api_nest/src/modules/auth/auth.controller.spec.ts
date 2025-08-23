@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ZodValidationPipe } from '../../models/zod.pipe';
 import { Response } from 'express';
+import { HttpStatus, UnauthorizedException } from '@nestjs/common';
+
+import { ZodValidationPipe } from '../../models/zod.pipe';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { AuthSchema } from './auth.schema';
 
 describe('AuthController', () => {

@@ -1,21 +1,25 @@
-import { realToCents } from '../../common/utils/money-converter.util';
 import { z } from 'zod';
+
+import { realToCents } from '../../common/utils/money-converter.util';
 
 const GameSchema = z.object({
   id: z.instanceof(Buffer),
   name: z.string(),
   description: z.string(),
   image: z.string(),
-  price: z.union([z.number(), z.string()]).transform((val) => {
-    if (typeof val === 'number') return realToCents(Number(val)).toString();
-    return val;
-  }),
+  price: z
+    .preprocess(
+      (val) => (typeof val === 'string' ? parseFloat(val) : val),
+      z.number(),
+    )
+    .transform((val) => realToCents(val).toString()),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
 const CreateGame = GameSchema.omit({
   id: true,
+  image: true,
   createdAt: true,
   updatedAt: true,
 });

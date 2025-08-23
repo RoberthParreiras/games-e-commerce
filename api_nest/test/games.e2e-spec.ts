@@ -14,7 +14,7 @@ describe('Games (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
   });
 
@@ -31,31 +31,24 @@ describe('Games (e2e)', () => {
 
   describe('/games', () => {
     it('should fail to create a game with invalid data', async () => {
-      const invalidGameDto = {
-        // name is missing
-        description: 'An invalid game.',
-        image: 'E2E test image',
-        price: '9999',
-      };
       await request(app.getHttpServer())
         .post('/games')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send(invalidGameDto)
+        .field('description', 'An invalid game.') // name is missing
+        .field('price', '9999')
+        .attach('image', Buffer.from('fake image data'), 'test-image.jpg')
         .expect(400);
     });
 
     it('should get a list of all games', async () => {
       // First, create a game to ensure the list is not empty
-      const createGameDto = {
-        name: 'E2E Test Game',
-        description: 'A game created for e2e testing.',
-        image: 'E2E test image',
-        price: '9999',
-      };
       await request(app.getHttpServer())
         .post('/games')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send(createGameDto)
+        .field('name', 'E2E Test Game')
+        .field('description', 'A game created for e2e testing.')
+        .field('price', '9999')
+        .attach('file', Buffer.from('fake image data'), 'test-image.jpg')
         .expect(201);
 
       // Then, get the list
@@ -71,16 +64,13 @@ describe('Games (e2e)', () => {
   describe('/games/:id', () => {
     it('should perform CRUD operations on a game', async () => {
       // 1. Create Game
-      const createGameDto = {
-        name: 'E2E Test Game',
-        description: 'A game created for e2e testing.',
-        image: 'E2E test image',
-        price: '9999',
-      };
       const postResponse = await request(app.getHttpServer())
         .post('/games')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send(createGameDto)
+        .field('name', 'E2E Test Game')
+        .field('description', 'A game created for e2e testing.')
+        .field('price', '9999')
+        .attach('file', Buffer.from('fake image data'), 'test-image.jpg')
         .expect(201);
 
       const gameId = postResponse.body.game.id;

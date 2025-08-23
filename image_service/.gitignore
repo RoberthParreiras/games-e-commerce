@@ -114,3 +114,6 @@ secrets.yml
 
 # Add other secret files specific to your project here
 .mypy_cache
+
+# Lint
+.ruff_cache/

@@ -1,11 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Request, Response } from 'express';
+import { Readable } from 'stream';
+import { HttpStatus } from '@nestjs/common';
+
 import { GamesController } from './game.controller';
 import { GamesService } from './game.service';
 import { ZodValidationPipe } from '../../models/zod.pipe';
 import { CreateGame } from './game.schema';
-import { HttpStatus } from '@nestjs/common';
-import { Response } from 'express';
 import { AuthGuard } from '../auth/auth.guard';
+import { ImageService } from '../../integration/imageModule/image.service';
 
 const id = '2e5ef823-ae50-4f76-bb82-5d3c87fa05da';
 const mockGame = {
@@ -36,6 +39,10 @@ describe('GamesController', () => {
     delete: jest.fn(),
   };
 
+  const mockImageService = {
+    create: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [GamesController],
@@ -43,6 +50,10 @@ describe('GamesController', () => {
         {
           provide: GamesService,
           useValue: mockGamesService,
+        },
+        {
+          provide: ImageService,
+          useValue: mockImageService,
         },
       ],
     })
@@ -78,15 +89,48 @@ describe('GamesController', () => {
       const createGameDto = {
         name: 'New game test',
         description: 'New description test',
-        image: 'image test',
         price: '50000',
       };
 
+      const mockRequest = {
+        headers: {
+          authorization: 'Bearer mock-token',
+        },
+      } as unknown as Request;
+
+      const mockFile: Express.Multer.File = {
+        fieldname: 'image',
+        originalname: 'test.jpg',
+        encoding: '7bit',
+        mimetype: 'image/jpeg',
+        size: 12345,
+        buffer: Buffer.from('test file content'),
+        stream: Readable.from(Buffer.from('test file content')),
+        destination: '',
+        filename: '',
+        path: '',
+      };
+
+      const mockImageUrl = 'http://example.com/image.jpg';
+      mockImageService.create.mockResolvedValue(mockImageUrl);
       mockGamesService.create.mockResolvedValue(mockGame);
 
-      await controller.createGame(createGameDto, mockResponse);
+      await controller.createGame(
+        createGameDto,
+        mockRequest,
+        mockResponse,
+        mockFile,
+      );
 
-      expect(service.create).toHaveBeenCalledWith(createGameDto);
+      expect(mockImageService.create).toHaveBeenCalledWith({
+        authorization: mockRequest.headers.authorization,
+        file: mockFile,
+      });
+
+      expect(service.create).toHaveBeenCalledWith({
+        ...createGameDto,
+        image: mockImageUrl,
+      });
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.CREATED);
     });
   });
@@ -113,9 +157,20 @@ describe('GamesController', () => {
       const minPrice = 1;
       const maxPrice = 20000;
 
-      await controller.listAllGames(page, limitPerPage, minPrice, maxPrice, mockResponse);
+      await controller.listAllGames(
+        page,
+        limitPerPage,
+        minPrice,
+        maxPrice,
+        mockResponse,
+      );
 
-      expect(service.listAll).toHaveBeenCalledWith({ page, limitPerPage, minPrice, maxPrice });
+      expect(service.listAll).toHaveBeenCalledWith({
+        page,
+        limitPerPage,
+        minPrice,
+        maxPrice,
+      });
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.OK);
       expect(mockResponse.json).toHaveBeenCalledWith({
         message: 'List games with success',

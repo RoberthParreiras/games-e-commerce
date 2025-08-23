@@ -1,15 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../models/prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
+import { Prisma } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+
 import {
   convertBytesToUuid,
   convertUuidToBytes,
 } from '../../common/utils/uuid.util';
+import { PrismaService } from '../../models/prisma/prisma.service';
 import { getChangedFields } from '../../common/utils/check-changed-fields.util';
-import { ConfigService } from '@nestjs/config';
 import { centsToReal } from '../../common/utils/money-converter.util';
 import { BaseService } from '../../common/base.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class GamesService extends BaseService {
@@ -77,12 +78,12 @@ export class GamesService extends BaseService {
     const maxPageLimit = this.configService.get<number>(
       'MAX_PAGE_DEFAULT_LIMIT',
     );
-    if (!limitPerPage || limitPerPage! < 1 || limitPerPage! > maxPageLimit!)
+    if (!limitPerPage || limitPerPage < 1 || limitPerPage > maxPageLimit!)
       limitPerPage = maxPageLimit!;
 
     // skip to the first item of the page
-    const skipNum = (page! - 1) * limitPerPage!;
-    
+    const skipNum = (page! - 1) * limitPerPage;
+
     const where: Prisma.GamesWhereInput = {};
     if (minPrice || maxPrice) {
       where.price = {
@@ -100,7 +101,7 @@ export class GamesService extends BaseService {
       this.prisma.games.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(totalGames / limitPerPage!);
+    const totalPages = Math.ceil(totalGames / limitPerPage);
 
     const gamesListReturn = gamesList.map((game) => ({
       ...game,

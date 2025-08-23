@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { GamesController } from './modules/games/game.controller';
-import { GamesService } from './modules/games/game.service';
-import { PrismaService } from './models/prisma/prisma.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AuthModule } from './modules/auth/auth.module';
-import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
+import { CacheModule } from '@nestjs/cache-manager';
+
+import { AuthModule } from './modules/auth/auth.module';
+import { GameModule } from './modules/games/game.module';
 
 @Module({
   imports: [
     AuthModule,
+    GameModule,
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.registerAsync({
       isGlobal: true,
@@ -25,7 +25,7 @@ import KeyvRedis from '@keyv/redis';
       },
     }),
   ],
-  controllers: [GamesController],
-  providers: [GamesService, PrismaService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

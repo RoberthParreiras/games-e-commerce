@@ -11,10 +11,11 @@ import {
   Res,
   UsePipes,
 } from '@nestjs/common';
+import { Response } from 'express';
+
 import { UserService } from './user.service';
 import { ZodValidationPipe } from '../../models/zod.pipe';
 import { CreateUser, CreateUserDto, UpdateUser } from './user.schema';
-import { Response } from 'express';
 import { convertBytesToUuid } from '../../common/utils/uuid.util';
 
 @Controller('/user')

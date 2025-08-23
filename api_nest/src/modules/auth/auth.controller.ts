@@ -10,8 +10,9 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { Response } from 'express';
+
+import { AuthService } from './auth.service';
 import { AuthSchema, SignUserDto } from './auth.schema';
 import { ZodValidationPipe } from '../../models/zod.pipe';
 import { JwtAuthGuard } from './jwt-auth.guard';

@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
-import { ZodValidationPipe } from '../../models/zod.pipe';
-import { CreateUser } from './user.schema';
 import { HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
+
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
+import { ZodValidationPipe } from '../../models/zod.pipe';
+import { CreateUser } from './user.schema';
 
 const id = uuidv4();
 const hashedPassword = bcrypt.hashSync('test12345', 10);

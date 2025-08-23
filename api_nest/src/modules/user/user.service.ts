@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
+
 import {
   convertBytesToUuid,
   convertUuidToBytes,
 } from '../../common/utils/uuid.util';
 import { PrismaService } from '../../models/prisma/prisma.service';
-import { v4 as uuidv4 } from 'uuid';
-
 import { getChangedFields } from '../../common/utils/check-changed-fields.util';
 import { createHashedPassword } from '../../common/utils/hash-password.util';
 import { BaseService } from '../../common/base.service';
