@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: dev.Dockerfile
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -17,3 +17,7 @@ services:
         condition: service_healthy
     networks:
       - app-network
+
+networks:
+  app-network:
+    external: true

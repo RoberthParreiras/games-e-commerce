@@ -17,7 +17,7 @@ COPY . .
 RUN dos2unix ./dev-prisma-entrypoint.sh
 RUN chmod +x ./dev-prisma-entrypoint.sh
 
-EXPOSE 3000
+EXPOSE 3001
 
 # Set the entrypoint to run the migration script on startup.
 ENTRYPOINT ["./dev-prisma-entrypoint.sh"]

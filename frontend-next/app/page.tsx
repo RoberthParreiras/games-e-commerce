@@ -1,32 +1,9 @@
 import Image from "next/image";
-import { Game } from "./types/game";
 import { GameCard } from "./components/gameCard";
+import { getGames } from "./lib/game-data";
 
-const games: Game[] = [
-  {
-    name: "God of War",
-    platform: "Playstation 2",
-    price: "R$ 100,00",
-    image: "/god_of_war_400.jpg",
-    link: "#",
-  },
-  {
-    name: "God of War 2",
-    platform: "Playstation 2",
-    price: "R$ 120,00",
-    image: "/god_of_war_2_400.jpg",
-    link: "#",
-  },
-  {
-    name: "Chrono Trigger",
-    platform: "Super Nintendo",
-    price: "R$ 60,00",
-    image: "/Chrono_Trigger_400.jpg",
-    link: "#",
-  },
-];
-
-export default function Home() {
+export default async function Home() {
+  const games = await getGames();
   return (
     <div>
       <header className="pl-4">
@@ -49,7 +26,7 @@ export default function Home() {
           Discover, buy, and play thousands of games
         </h2>
         <section className="md:h-[1580px] lg:h-[800px] bg-[#393E46] p-5 grid grid-rows-2 grid-cols-2 lg:grid-cols-3 text-[#DFD0B8]">
-          {games.map((game) => (
+          {games.games.map((game) => (
             <GameCard key={game.name} game={game} />
           ))}
         </section>

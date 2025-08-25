@@ -1,7 +1,13 @@
-export type Game = {
+export type GameInfo = {
   name: string;
-  platform: string;
+  description: string;
   price: string;
   image: string;
   link: string;
+};
+
+export type GameResponse = {
+  message: string;
+  games: GameInfo[];
+  totalPages: number;
 };

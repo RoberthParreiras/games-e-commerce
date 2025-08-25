@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 class ImageRepository:
     _MINIO_BUCKET = os.environ.get("MINIO_BUCKET")
-    _MINIO_ENDPOINT = os.environ.get("MINIO_ENDPOINT")
+    _MINIO_HOST = os.environ.get("MINIO_HOST")
 
     def __init__(
         self,
@@ -69,7 +69,7 @@ class ImageRepository:
             )
 
             file_url = (
-                f"http://{self._MINIO_ENDPOINT}/{self._MINIO_BUCKET}/{object_name}"
+                f"http://{self._MINIO_HOST}/{self._MINIO_BUCKET}/{object_name}"
             )
 
             image = ImageModel(
