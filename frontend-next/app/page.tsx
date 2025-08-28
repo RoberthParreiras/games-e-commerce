@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { GameCard } from "./components/gameCard";
-import { getGames } from "./lib/game-data";
+import { GameCard } from "@/app/components/gameCard";
+import { getGames } from "@/app/lib/game-data";
 
 export default async function Home() {
   const games = await getGames();

@@ -46,7 +46,9 @@ export class GamesController {
   ) {
     const authorization = request.headers['authorization'];
     if (!authorization) {
-      this.logger.error(`[${this.createGame.name}] ${HttpStatus.UNAUTHORIZED} - Authorization header missing`);
+      this.logger.error(
+        `[${this.createGame.name}] ${HttpStatus.UNAUTHORIZED} - Authorization header missing`,
+      );
       return response.status(HttpStatus.UNAUTHORIZED).json({
         message: 'Authorization header missing',
       });
