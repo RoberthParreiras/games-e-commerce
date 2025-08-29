@@ -102,7 +102,7 @@ function CropImageModal() {
   );
 
   return (
-    <div className="bg-background">
+    <div>
       {hasImageSrc ? (
         <div className="flex flex-start">
           <Modal open={open} onClose={handleClose}>

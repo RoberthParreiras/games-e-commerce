@@ -1,28 +1,27 @@
 "use client";
 
-import { GameForm } from "@/app/components/productForm";
-import { Button } from "@/app/components/ui/button";
-import CropImageModal from "@/app/components/imageModal";
+import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import z from "zod";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  description: z.string().min(2, {
-    message: "Description must be at least 2 characters.",
-  }),
-  price: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/, { message: "Enter a valid price" }),
-  image: z.instanceof(Blob, { message: "A cropped image is required." }),
-});
+import CropImageModal from "@/app/components/imageModal";
+import { GameForm } from "@/app/components/productForm";
+import { Button } from "@/app/components/ui/button";
+import { formSchema } from "@/app/schemas/gameFormSchema";
 
 type FormValues = z.infer<typeof formSchema>;
 
 export default function Image() {
+  const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/signin");
+    },
+  });
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,6 +33,11 @@ export default function Image() {
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    if (!session?.accessToken) {
+      console.error("No access token found");
+      return;
+    }
+
     const formData = new FormData();
 
     formData.append("file", data.image, "image.jpg");
@@ -41,21 +45,16 @@ export default function Image() {
     formData.append("description", data.description);
     formData.append("price", data.price);
 
-    // console.log("S", ...formData.entries());
     const base = process.env.NEXT_PUBLIC_API_URL ?? "";
     const url = `${base}/games`;
 
-    const res = await fetch(url, {
+    await fetch(url, {
       method: "POST",
       body: formData,
       headers: {
-        // TODO when implement authentication, change to use cookies instead
-        Authorization:
-          "Bearer ",
+        Authorization: `Bearer ${session?.accessToken}`,
       },
     });
-
-    console.log(res);
   };
 
   return (
