@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-7xl m-auto">
+    <div className="w-full max-w-7xl mx-auto px-4">
       <header className="pl-4">
         <Image
           src="/logo.png"

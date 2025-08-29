@@ -5,7 +5,7 @@ import { GameInfo } from "../types/game";
 export function GameCard({ game }: { game: GameInfo }) {
   console.log(game);
   return (
-    <article className="w-[410px] h-[782px] mx-auto flex flex-wrap justify-center hover:cursor-pointer">
+    <article className="w-full max-w-md mx-auto flex flex-wrap justify-center hover:cursor-pointer">
       <Image
         src={game.image}
         alt={`${game.name} image`}

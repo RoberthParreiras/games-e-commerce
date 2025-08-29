@@ -59,7 +59,7 @@ export default function Image() {
 
   return (
     <FormProvider {...form}>
-      <form className="w-5xl mx-auto" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="w-full max-w-5xl mx-auto" onSubmit={form.handleSubmit(onSubmit)}>
         <CropImageModal />
         {form.formState.errors.image && (
           <p className="text-sm font-medium text-destructive">

@@ -15,17 +15,19 @@ export default async function Home() {
           priority
         />
       </header>
-      <main className="w-7xl m-auto">
-        <Image
-          src="/banner.jpg"
-          alt="banner with video game characters"
-          width={1280}
-          height={960}
-        />
-        <h2 className="text-5xl text-center my-20">
+      <main className="w-full max-w-7xl mx-auto px-4">
+        <div className="relative w-full h-[390px] md:h-[500px] lg:h-[960px]">
+          <Image
+            src="/banner.jpg"
+            alt="banner with video game characters"
+            fill
+            style={{ objectFit: 'contain'}}
+          />
+        </div>
+        <h2 className="lg:text-5xl md:text-4xl text-center my-20">
           Discover, buy, and play thousands of games
         </h2>
-        <section className="md:h-[1580px] lg:h-[800px] bg-[#393E46] p-5 grid grid-rows-2 grid-cols-2 lg:grid-cols-3 text-[#DFD0B8]">
+        <section className="bg-[#393E46] p-5 grid gap-8 grid-cols-1 lg:grid-cols-3 text-[#DFD0B8]">
           {games.games.map((game) => (
             <GameCard key={game.name} game={game} />
           ))}
@@ -33,7 +35,7 @@ export default async function Home() {
         <section id="about">
           <h2 className="text-5xl text-center my-20">About us</h2>
           <div>
-            <p className="text-4xl text-center w-11/12 mx-auto tracking-wide leading-14">
+            <p className="lg:text-4xl text-center w-1/3 lg:w-11/12 mx-auto tracking-wide leading-14">
               With over a decade of experience serving the gaming community,
               we've built a modern e-commerce platform designed by gamers, for
               gamers. We leverage cutting-edge technology to bring you a fast,

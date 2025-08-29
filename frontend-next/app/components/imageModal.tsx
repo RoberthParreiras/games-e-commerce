@@ -191,35 +191,37 @@ function CropImageModal() {
       ) : (
         <>
           {imageSrc ? (
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="file-upload"
-                className="bg-[#DFD0B8] text-[#222831] text-center rounded h-12 w-52 flex items-center justify-center hover:bg-[#cbb89d] hover:cursor-pointer"
-              >
-                <span>Change the image</span>
-                <Input
-                  id="file-upload"
-                  type="file"
-                  onChange={onFileChange}
-                  accept="image/*"
-                  className="hidden"
-                />
-              </label>
-              <Button
-                onClick={() => setImageSrc("")}
-                className="bg-[#DFD0B8] text-[#222831] h-12 w-52 hover:bg-[#cbb89d] hover:cursor-pointer"
-              >
-                Remove image
-              </Button>
+            <div className="flex flex-col md:flex-row items-center md:justify-between mb-4">
+              <div className="flex justify-around md:justify-center md:gap-8 mb-4">
+                <label
+                  htmlFor="file-upload"
+                  className="bg-[#DFD0B8] text-[#222831] text-center rounded h-12 w-52 flex items-center justify-center hover:bg-[#cbb89d] hover:cursor-pointer"
+                >
+                  <span>Change the image</span>
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    onChange={onFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </label>
+                <Button
+                  onClick={() => setImageSrc("")}
+                  className="bg-[#DFD0B8] text-[#222831] h-12 w-52 hover:bg-[#cbb89d] hover:cursor-pointer"
+                >
+                  Remove image
+                </Button>
+              </div>
               <div className="border">
                 <img src={croppedImage!} alt="preview image" />
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col md:flex-row items-center md:justify-between mb-4">
               <label
                 htmlFor="file-upload"
-                className="bg-[#DFD0B8] text-[#222831] text-center rounded h-12 w-52 flex items-center justify-center hover:bg-[#cbb89d] hover:cursor-pointer"
+                className="bg-[#DFD0B8] text-[#222831] mb-4 text-center rounded h-12 w-52 flex items-center justify-center hover:bg-[#cbb89d] hover:cursor-pointer"
               >
                 <span>Select an image</span>
                 <Input
