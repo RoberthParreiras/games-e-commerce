@@ -46,13 +46,13 @@ async def create_image(
     response_model_by_alias=False,
 )
 async def update_image(
-    image_id: str,
+    image_url: str,
     user_id: str,
     file: UploadFile,
     image_service: ImageService = Depends(ImageService),
 ):
     try:
-        updated_image = await image_service.update_image(file, image_id, user_id)
+        updated_image = await image_service.update_image(file, image_url, user_id)
         return updated_image
     except Exception as e:
         log.error(f"An error occurred during file update: {str(e)}")
@@ -86,15 +86,15 @@ async def get_image(image_id: str, image_service: ImageService = Depends(ImageSe
 
 
 @router.delete(
-    "/image/{image_id}",
+    "/image/delete/",
     response_description="Delete image",
     response_model=dict,
     status_code=status.HTTP_200_OK,
     response_model_by_alias=False,
 )
-async def delete(image_id: str, image_service: ImageService = Depends(ImageService)):
+async def delete(image_url: str, image_service: ImageService = Depends(ImageService)):
     try:
-        deleted_image = await image_service.delete_image(image_id)
+        deleted_image = await image_service.delete_image(image_url)
         return {"message": deleted_image}
     except Exception as e:
         log.error(f"An error occurred in the deletion file: {str(e)}")

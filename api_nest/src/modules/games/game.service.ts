@@ -117,6 +117,7 @@ export class GamesService extends BaseService {
     name?: string;
     description?: string;
     price?: string;
+    image?: string;
   }) {
     const { id, ...updates } = params;
 
@@ -131,6 +132,7 @@ export class GamesService extends BaseService {
         name: currentGame?.name,
         description: currentGame?.description,
         price: currentGame?.price.toString(),
+        image: currentGame?.image,
       },
       updates,
     );

@@ -68,9 +68,7 @@ class ImageRepository:
                 content_type=content_type,
             )
 
-            file_url = (
-                f"http://{self._MINIO_HOST}/{self._MINIO_BUCKET}/{object_name}"
-            )
+            file_url = f"http://{self._MINIO_HOST}/{self._MINIO_BUCKET}/{object_name}"
 
             image = ImageModel(
                 user_id=user_id,  # type:ignore
@@ -100,13 +98,13 @@ class ImageRepository:
 
             raise DatabaseOperationError(f"Database error during creation: {e}") from e
 
-    async def update(self, file: UploadFile, image_id: str, user_id: str):
+    async def update(self, file: UploadFile, image_url: str, user_id: str):
         """
         Update an image to MinIO and saves its metadata to MongoDB
         """
 
         try:
-            image_doc = await self.db.find_one({"_id": ObjectId(image_id)})
+            image_doc = await self.db.find_one({"url": ObjectId(image_url)})
             if not image_doc:
                 return None
 
@@ -135,8 +133,8 @@ class ImageRepository:
                     "uploaded_at": datetime.now(),
                 }
             }
-            await self.db.update_one({"_id": ObjectId(image_id)}, update_data)
-            updated_doc = await self.db.find_one({"_id": ObjectId(image_id)})
+            await self.db.update_one({"url": ObjectId(image_url)}, update_data)
+            updated_doc = await self.db.find_one({"url": ObjectId(image_url)})
 
             return updated_doc
 
@@ -160,9 +158,9 @@ class ImageRepository:
 
             raise DatabaseOperationError(f"Database error while retrieving: {e}") from e
 
-    async def delete(self, image_id: str):
+    async def delete(self, image_url: str):
         try:
-            image_doc = await self.db.find_one({"_id": ObjectId(image_id)})
+            image_doc = await self.db.find_one({"url": image_url})
             if not image_doc:
                 return None
 
@@ -173,7 +171,7 @@ class ImageRepository:
                 object_name=object_name,
             )
 
-            await self.db.delete_one({"_id": ObjectId(image_id)})
+            await self.db.delete_one({"url": image_url})
             return "Deleted with success"
 
         except S3Error as e:

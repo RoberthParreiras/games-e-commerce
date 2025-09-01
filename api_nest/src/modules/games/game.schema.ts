@@ -29,9 +29,22 @@ const UpdateGame = GameSchema.omit({
   createdAt: true,
   image: true,
   updatedAt: true,
+}).extend({
+  image: z.string().optional(),
+  oldImage: z.string().optional(),
+});
+
+const DeleteGame = GameSchema.omit({
+  id: true,
+  createdAt: true,
+  description: true,
+  name: true,
+  price: true,
+  updatedAt: true,
 });
 
 export type CreateGameDto = z.infer<typeof CreateGame>;
 export type UpdateGameDto = z.infer<typeof UpdateGame>;
+export type DeleteGameDto = z.infer<typeof DeleteGame>;
 
 export { CreateGame };

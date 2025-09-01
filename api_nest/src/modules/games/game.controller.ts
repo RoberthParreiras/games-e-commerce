@@ -21,7 +21,12 @@ import { Request, Response } from 'express';
 
 import { GamesService } from './game.service';
 import { ZodValidationPipe } from '../../models/zod.pipe';
-import { CreateGame, CreateGameDto, UpdateGameDto } from './game.schema';
+import {
+  CreateGame,
+  CreateGameDto,
+  DeleteGameDto,
+  UpdateGameDto,
+} from './game.schema';
 import { convertBytesToUuid } from '../../common/utils/uuid.util';
 import { AuthGuard } from '../auth/auth.guard';
 import { ImageService } from '../../integration/imageModule/image.service';
@@ -139,16 +144,46 @@ export class GamesController {
 
   @UseGuards(AuthGuard)
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('file'))
   async updateGame(
     @Param('id') id: string,
     @Body() body: UpdateGameDto,
     @Res() response: Response,
+    @Req() request: Request,
+    @UploadedFile()
+    file: Express.Multer.File,
   ) {
+    const authorization = request.headers['authorization'];
+    if (!authorization) {
+      this.logger.error(
+        `[${this.createGame.name}] ${HttpStatus.UNAUTHORIZED} - Authorization header missing`,
+      );
+      return response.status(HttpStatus.UNAUTHORIZED).json({
+        message: 'Authorization header missing',
+      });
+    }
+
+    // check if the image has changed
+    let image = '';
+    if (file) {
+      image = await this.imageService.create({
+        authorization,
+        file,
+      });
+      await this.imageService.delete({
+        authorization,
+        image_url: body.oldImage!,
+      });
+    } else if (body.image) {
+      image = body.image;
+    }
+
     await this.gamesService.patch({
       id,
       name: body.name,
       description: body.description,
       price: body.price,
+      image: image,
     });
 
     this.logger.log(
@@ -162,8 +197,24 @@ export class GamesController {
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  async deleteGame(@Param('id') id: string, @Res() response: Response) {
+  async deleteGame(
+    @Param('id') id: string,
+    @Body() body: DeleteGameDto,
+    @Res() response: Response,
+    @Req() request: Request,
+  ) {
+    const authorization = request.headers['authorization'];
+    if (!authorization) {
+      this.logger.error(
+        `[${this.createGame.name}] ${HttpStatus.UNAUTHORIZED} - Authorization header missing`,
+      );
+      return response.status(HttpStatus.UNAUTHORIZED).json({
+        message: 'Authorization header missing',
+      });
+    }
+
     await this.gamesService.delete({ id });
+    await this.imageService.delete({ authorization, image_url: body.image });
 
     this.logger.log(
       `[${this.deleteGame.name}] ${HttpStatus.OK} - Game with id: ${id} deleted successfully`,

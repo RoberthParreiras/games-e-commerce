@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as FormData from 'form-data';
+import FormData from 'form-data';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -41,6 +41,34 @@ export class ImageService {
       );
 
       return response.data.url;
+    } catch (error) {
+      this.logger.error(
+        `Failed to upload image. Status: ${error.response?.status}`,
+        error.response?.data,
+      );
+      throw error;
+    }
+  }
+
+  async delete(params: {
+    authorization: string;
+    image_url: string;
+  }): Promise<any> {
+    const { authorization, image_url } = params;
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.delete<{ message: string }>(
+          `${this.imageServiceUrl}/image/delete/?image_url=${encodeURIComponent(image_url)}`,
+          {
+            headers: {
+              Authorization: authorization,
+            },
+          },
+        ),
+      );
+
+      return response.data.message;
     } catch (error) {
       this.logger.error(
         `Failed to upload image. Status: ${error.response?.status}`,

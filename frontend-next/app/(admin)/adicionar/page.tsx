@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
@@ -8,19 +9,21 @@ import { useRouter } from "next/navigation";
 
 import CropImageModal from "@/app/components/imageModal";
 import { GameForm } from "@/app/components/productForm";
-import { Button } from "@/app/components/ui/button";
 import { formSchema } from "@/app/schemas/gameFormSchema";
+import { CustomButton } from "@/app/components/base/button";
+import { apiFetch } from "@/app/api/fetch";
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function Image() {
+export default function CreateProduct() {
   const router = useRouter();
-  const { data: session, status } = useSession({
-    required: true,
-    onUnauthenticated() {
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
       router.push("/signin");
-    },
-  });
+    }
+  }, [status, router]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -45,21 +48,19 @@ export default function Image() {
     formData.append("description", data.description);
     formData.append("price", data.price);
 
-    const base = process.env.NEXT_PUBLIC_API_URL ?? "";
-    const url = `${base}/games`;
-
-    await fetch(url, {
+    await apiFetch("/games", {
       method: "POST",
       body: formData,
-      headers: {
-        Authorization: `Bearer ${session?.accessToken}`,
-      },
+      accessToken: session.accessToken,
     });
   };
 
   return (
     <FormProvider {...form}>
-      <form className="w-full max-w-5xl mx-auto" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="w-full max-w-5xl mx-auto"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <CropImageModal />
         {form.formState.errors.image && (
           <p className="text-sm font-medium text-destructive">
@@ -68,15 +69,10 @@ export default function Image() {
         )}
         <GameForm />
         <div className="mb-4 flex justify-between">
-          <Button className=" bg-[#DFD0B8] text-[#222831] h-12 w-52 hover:bg-[#cbb89d] hover:cursor-pointer">
-            Cancel
-          </Button>
-          <Button
-            className=" bg-[#DFD0B8] text-[#222831] h-12 w-52 hover:bg-[#cbb89d] hover:cursor-pointer"
-            type="submit"
-          >
+          <CustomButton visual="primary">Cancel</CustomButton>
+          <CustomButton visual="primary" type="submit">
             Save
-          </Button>
+          </CustomButton>
         </div>
       </form>
     </FormProvider>

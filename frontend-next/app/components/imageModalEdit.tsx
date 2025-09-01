@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Box, Button as ButtonMui } from "@mui/material";
 import Cropper from "react-easy-crop";
 import Slider from "@mui/material/Slider";
@@ -11,14 +11,13 @@ import { useFormContext } from "react-hook-form";
 
 import { getCroppedImg, readFile } from "@/app/lib/crop-image/canvasUtils";
 import { Input } from "@/app/components/ui/input";
-import { Button } from "@/app/components/ui/button";
 import { CustomButton } from "./base/button";
 
 type Crop = { x: number; y: number };
 
 type PixelArea = any; // keep flexible for react-easy-crop typings; refine if needed
 
-function CropImageModal() {
+function CropImageModalEdit({ image }: { image: string }) {
   const { setValue } = useFormContext();
 
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -45,6 +44,14 @@ function CropImageModal() {
   const handleClose = () => {
     setOpen(false);
   };
+
+  useEffect(() => {
+    if (image) {
+      setImageSrc(image);
+      setCroppedImage(image);
+      handleHasNotImage();
+    }
+  }, [image]);
 
   const onCropComplete = useCallback(
     (croppedArea: any, croppedAreaPixelsArg: PixelArea) => {
@@ -83,10 +90,6 @@ function CropImageModal() {
       console.error(e);
     }
   }, [imageSrc, croppedAreaPixels]);
-
-  // const onClose = useCallback(() => {
-  //   setCroppedImage(null);
-  // }, []);
 
   const onFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -207,9 +210,7 @@ function CropImageModal() {
                     className="hidden"
                   />
                 </label>
-                <CustomButton visual="primary" onClick={() => setImageSrc("")}>
-                  Remove image
-                </CustomButton>
+                <CustomButton visual="primary" onClick={() => setImageSrc("")}>Remove Image</CustomButton>
               </div>
               <div className="border">
                 <img src={croppedImage!} alt="preview image" />
@@ -243,4 +244,4 @@ function CropImageModal() {
   );
 }
 
-export default CropImageModal;
+export default CropImageModalEdit;
