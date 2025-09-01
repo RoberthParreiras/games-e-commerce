@@ -43,6 +43,7 @@ export const authOptions: NextAuthOptions = {
             name: decodedPayload.userName,
             email: email, // The email is not in the token, so we use the one from credentials
             accessToken: data.access_token,
+            accessTokenExpires: decodedPayload.exp,
           };
         }
         return null;
@@ -59,6 +60,11 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = user.accessToken;
         token.id = user.id;
         token.name = user.name;
+
+        // Set the expiration of the NextAuth token to match the backend token
+        if (user.accessTokenExpires) {
+          token.exp = user.accessTokenExpires;
+        }
       }
       return token;
     },
@@ -68,6 +74,12 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.name = token.name;
+      }
+      // Add the expiration from the token to the session
+      if (token.exp) {
+        session.accessTokenExpires = new Date(
+          (token.exp as number) * 1000
+        ).toISOString();
       }
       return session;
     },

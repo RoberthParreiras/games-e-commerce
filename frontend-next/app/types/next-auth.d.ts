@@ -9,6 +9,7 @@ declare module "next-auth" {
   interface User {
     id?: string;
     accessToken?: string;
+    accessTokenExpires?: number;
   }
 
   /**
@@ -19,6 +20,7 @@ declare module "next-auth" {
     user: {
       id?: string;
     } & DefaultSession["user"];
+    accessTokenExpires?: string;
   }
 }
 

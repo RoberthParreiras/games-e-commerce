@@ -6,22 +6,13 @@ export default async function Home() {
   const games = await getGames();
   return (
     <div>
-      <header className="pl-4">
-        <Image
-          src="/logo.png"
-          alt="logo company"
-          width={120}
-          height={120}
-          priority
-        />
-      </header>
       <main className="w-full max-w-7xl mx-auto px-4">
         <div className="relative w-full h-[390px] md:h-[500px] lg:h-[960px]">
           <Image
             src="/banner.jpg"
             alt="banner with video game characters"
             fill
-            style={{ objectFit: 'contain'}}
+            style={{ objectFit: "contain" }}
           />
         </div>
         <h2 className="lg:text-5xl md:text-4xl text-center my-20">
@@ -35,7 +26,7 @@ export default async function Home() {
         <section id="about">
           <h2 className="text-5xl text-center my-20">About us</h2>
           <div>
-            <p className="lg:text-4xl text-center w-1/3 lg:w-11/12 mx-auto tracking-wide leading-14">
+            <p className="lg:text-4xl text-center w-2/3 md:w-1/3 lg:w-11/12 mx-auto tracking-wide leading-14">
               With over a decade of experience serving the gaming community,
               we've built a modern e-commerce platform designed by gamers, for
               gamers. We leverage cutting-edge technology to bring you a fast,
@@ -47,7 +38,6 @@ export default async function Home() {
           </div>
         </section>
       </main>
-      {/* <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center"></footer> */}
     </div>
   );
 }
