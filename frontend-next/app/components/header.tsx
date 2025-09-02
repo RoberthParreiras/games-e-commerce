@@ -1,14 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { unstable_noStore as noStore } from "next/cache";
+import { useSession } from "next-auth/react";
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+export function Header() {
+  const { data: session } = useSession();
 
-export async function Header() {
-	noStore();
-  const session = await getServerSession(authOptions);
-  console.log("s", session);
   return (
     <header className="flex bg-[#393E46] justify-between px-4 text-[#DFD0B8]">
       <Link href="/">
@@ -26,9 +24,12 @@ export async function Header() {
             <Link href="/" className="text-xs sm:text-lg hover:text-sky-500">
               Home
             </Link>
-            <span className="text-xs sm:text-sm text-wrap my-auto">
+            <Link
+              href="/admin"
+              className="text-xs sm:text-sm text-wrap my-auto hover:text-sky-500"
+            >
               Welcome, {session.user.name}
-            </span>
+            </Link>
           </div>
         ) : (
           <div className="flex justify-around w-full">

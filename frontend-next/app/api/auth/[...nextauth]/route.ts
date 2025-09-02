@@ -55,16 +55,14 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      const tokenExpiresInMiliseconds = user.accessTokenExpires! * 1000;
+
       // user is only available on sign-in
       if (user) {
         token.accessToken = user.accessToken;
         token.id = user.id;
         token.name = user.name;
-
-        // Set the expiration of the NextAuth token to match the backend token
-        if (user.accessTokenExpires) {
-          token.exp = user.accessTokenExpires;
-        }
+        token.backendTokenExpires = tokenExpiresInMiliseconds;
       }
       return token;
     },
@@ -75,11 +73,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id;
         session.user.name = token.name;
       }
-      // Add the expiration from the token to the session
-      if (token.exp) {
-        session.accessTokenExpires = new Date(
-          (token.exp as number) * 1000
-        ).toISOString();
+      if (token.backendTokenExpires) {
+        session.accessTokenExpires = token.backendTokenExpires as number;
       }
       return session;
     },

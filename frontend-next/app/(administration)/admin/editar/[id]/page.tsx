@@ -21,8 +21,16 @@ export default function EditProduct() {
   const { id } = useParams();
 
   const router = useRouter();
-  const { data: session, status } = useSession();
-
+  const { data: session, status } =
+    useSession();
+    // {
+    //   required: true,
+    //   onUnauthenticated() {
+    //     router.push("/signin");
+    //     router.refresh();
+    //   },
+    // }
+  console.log("session", session);
   const [product, setProduct] = useState<{
     image: string | undefined;
     oldImage: string | undefined;
@@ -39,10 +47,11 @@ export default function EditProduct() {
   });
 
   useEffect(() => {
+    console.log(status);
     if (status === "unauthenticated") {
       router.push("/signin");
+      router.refresh();
     }
-
     async function fetchProduct() {
       const data: SingleGameResponse = await apiFetch(`/games/${id}`);
 
@@ -62,14 +71,9 @@ export default function EditProduct() {
     if (id) {
       fetchProduct();
     }
-  }, [id, status, router]);
+  }, [id, status]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    if (!session?.accessToken) {
-      console.error("No access token found");
-      return;
-    }
-
     const formData = new FormData();
 
     if (typeof data.image !== "string") {
@@ -83,33 +87,28 @@ export default function EditProduct() {
     formData.append("description", data.description);
     formData.append("price", data.price);
 
-    apiFetch(`/games/${id}`, {
+    await apiFetch(`/games/${id}`, {
       method: "PATCH",
       body: formData,
-      accessToken: session.accessToken,
+      accessToken: session?.accessToken,
     });
   };
 
   async function onDelete() {
-    if (!session?.accessToken) {
-      console.error("No access token found");
-      return;
-    }
-
     const formData = new FormData();
     formData.append("image", product?.oldImage!);
 
     apiFetch(`/games/${id}`, {
       method: "DELETE",
       body: formData,
-      accessToken: session.accessToken,
+      accessToken: session?.accessToken,
     });
   }
 
   return (
     <FormProvider {...form}>
       <form
-        className="w-full max-w-5xl mx-auto"
+        className="w-full max-w-5xl mx-auto mt-16"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <CropImageModalEdit image={product?.image!} />
@@ -120,7 +119,9 @@ export default function EditProduct() {
         )}
         <GameFormEdit />
         <div className="mb-4 flex justify-between">
-          <CustomButton visual="primary">Cancel</CustomButton>
+          <CustomButton visual="primary" onClick={() => router.push("/admin")}>
+            Cancel
+          </CustomButton>
           <CustomButton visual="primary" type="submit">
             Save
           </CustomButton>

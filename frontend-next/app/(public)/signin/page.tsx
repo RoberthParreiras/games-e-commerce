@@ -1,5 +1,10 @@
 "use client";
 
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+
 import { Button } from "@/app/components/ui/button";
 import {
   Form,
@@ -10,10 +15,6 @@ import {
   FormMessage,
 } from "@/app/components/ui/form";
 import { Input } from "@/app/components/ui/input";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 
 type FormValues = {
   email: string;
@@ -43,7 +44,8 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid email or password");
     } else if (result?.ok) {
-      router.push("/adicionar");
+      router.push("/admin");
+      router.refresh();
     }
   }
 

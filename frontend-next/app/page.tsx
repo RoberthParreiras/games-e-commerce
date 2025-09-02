@@ -1,9 +1,10 @@
 import Image from "next/image";
-import { GameCard } from "@/app/components/gameCard";
+
+import { GameCardHome } from "@/app/components/gameCardHome";
 import { getGames } from "@/app/lib/game-data";
 
 export default async function Home() {
-  const games = await getGames();
+  const games = await getGames({});
   return (
     <div>
       <main className="w-full max-w-7xl mx-auto px-4">
@@ -20,7 +21,7 @@ export default async function Home() {
         </h2>
         <section className="bg-[#393E46] p-5 grid gap-8 grid-cols-1 lg:grid-cols-3 text-[#DFD0B8]">
           {games.games.map((game) => (
-            <GameCard key={game.name} game={game} />
+            <GameCardHome key={game.id} game={game} />
           ))}
         </section>
         <section id="about">
