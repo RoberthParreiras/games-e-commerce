@@ -55,10 +55,11 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      const tokenExpiresInMiliseconds = user.accessTokenExpires! * 1000;
-
+      
       // user is only available on sign-in
       if (user) {
+        const tokenExpiresInMiliseconds = user.accessTokenExpires! * 1000;
+
         token.accessToken = user.accessToken;
         token.id = user.id;
         token.name = user.name;
@@ -73,6 +74,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id;
         session.user.name = token.name;
       }
+      
       if (token.backendTokenExpires) {
         session.accessTokenExpires = token.backendTokenExpires as number;
       }

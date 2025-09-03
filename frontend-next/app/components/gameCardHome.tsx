@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { GameInfo } from "../types/game";
+import { GameInfo } from "@/app/types/game";
 
 export function GameCardHome({ game }: { game: GameInfo }) {
   return (

@@ -1,6 +1,6 @@
 import { ComponentPropsWithoutRef, forwardRef } from "react";
 
-import { Button } from "../ui/button";
+import { Button } from "@/app/components/ui/button";
 import { cn } from "@/app/lib/utils";
 
 interface CustomButtonProps

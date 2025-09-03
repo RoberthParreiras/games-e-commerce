@@ -13,7 +13,8 @@ import { formSchema } from "@/app/schemas/gameFormSchema";
 import { CustomButton } from "@/app/components/base/button";
 import { apiFetch } from "@/app/api/fetch";
 
-type FormValues = z.infer<typeof formSchema>;
+type FormInput = z.input<typeof formSchema>;
+type FormOutput = z.output<typeof formSchema>;
 
 export default function CreateProduct() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function CreateProduct() {
     }
   }, [status, router]);
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -36,7 +37,7 @@ export default function CreateProduct() {
     },
   });
 
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+  const onSubmit: SubmitHandler<FormOutput> = async (data) => {
     if (!session?.accessToken) {
       console.error("No access token found");
       return;
@@ -47,20 +48,22 @@ export default function CreateProduct() {
     formData.append("file", data.image, "image.jpg");
     formData.append("name", data.name);
     formData.append("description", data.description);
-    formData.append("price", data.price);
+    formData.append("price", String(data.price));
 
     await apiFetch("/games", {
       method: "POST",
       body: formData,
       accessToken: session.accessToken,
     });
+
+    router.push("/admin");
   };
 
   return (
     <FormProvider {...form}>
       <form
         className="w-full max-w-5xl mx-auto"
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onSubmit as any)}
       >
         <CropImageModal />
         {form.formState.errors.image && (
@@ -70,7 +73,9 @@ export default function CreateProduct() {
         )}
         <GameForm />
         <div className="mb-4 flex justify-between">
-          <CustomButton visual="primary">Cancel</CustomButton>
+          <CustomButton visual="primary" onClick={() => router.push("/admin")}>
+            Cancel
+          </CustomButton>
           <CustomButton visual="primary" type="submit">
             Save
           </CustomButton>

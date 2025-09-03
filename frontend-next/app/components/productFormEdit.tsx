@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from "@/app/components/ui/form";
 import { Input } from "@/app/components/ui/input";
+import { PriceInput } from "./base/priceInput";
 
 export function GameFormEdit() {
   const { control } = useFormContext();
@@ -69,12 +70,7 @@ export function GameFormEdit() {
               Price
             </FormLabel>
             <FormControl>
-              <Input
-                className="bg-[#DFD0B8] text-[#222831] h-12"
-                placeholder="price"
-                type="number"
-                {...field}
-              />
+              <PriceInput {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

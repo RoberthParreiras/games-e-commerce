@@ -1,3 +1,6 @@
+import Link from "next/link";
+
+import { CustomButton } from "@/app/components/base/button";
 import { GameCardAdmin } from "@/app/components/gameCardAdmin";
 import { GameFilter } from "@/app/components/gameFilter";
 import { GamePagination } from "@/app/components/gamePagination";
@@ -18,9 +21,9 @@ export default async function Dashboard({
     limitPerPage: limitPerPageStr = "10",
     minPrice: minPriceStr,
     maxPrice: maxPriceStr,
-  } = await searchParams ?? {};
-  const minPriceInCents = Number(minPriceStr) * 100
-  const maxPriceInCents = Number(maxPriceStr) * 100
+  } = (await searchParams) ?? {};
+  const minPriceInCents = Number(minPriceStr) * 100;
+  const maxPriceInCents = Number(maxPriceStr) * 100;
 
   const page = Number(pageStr);
   const limitPerPage = Number(limitPerPageStr);
@@ -30,6 +33,9 @@ export default async function Dashboard({
   const gameList = await getGames({ page, limitPerPage, minPrice, maxPrice });
   return (
     <div>
+      <Link href="/admin/adicionar" >
+        <CustomButton type="button" className="text-2xl my-8 ml-4 w-1/3">Add game</CustomButton>
+      </Link>
       <GameFilter />
       <section className="bg-[#393E46] p-5 grid gap-8 grid-cols-1 lg:grid-cols-3 text-[#DFD0B8] mt-16">
         {gameList.games.map((game) => (

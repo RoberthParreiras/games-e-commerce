@@ -1,5 +1,5 @@
-import { apiFetch } from "../api/fetch";
-import { GameResponse } from "../types/game";
+import { apiFetch } from "@/app/api/fetch";
+import { GameResponse } from "@/app/types/game";
 
 export async function getGames({
   page,
