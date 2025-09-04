@@ -15,6 +15,7 @@ import { CustomButton } from "./base/button";
 
 type Crop = { x: number; y: number };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PixelArea = any; // keep flexible for react-easy-crop typings; refine if needed
 
 function CropImageModalEdit({ image }: { image: string }) {
@@ -54,6 +55,7 @@ function CropImageModalEdit({ image }: { image: string }) {
   }, [image]);
 
   const onCropComplete = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (croppedArea: any, croppedAreaPixelsArg: PixelArea) => {
       setCroppedAreaPixels(croppedAreaPixelsArg);
     },
@@ -95,7 +97,7 @@ function CropImageModalEdit({ image }: { image: string }) {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
         const file = e.target.files[0];
-        let imageDataUrl = (await readFile(file)) as string;
+        const imageDataUrl = (await readFile(file)) as string;
 
         setImageSrc(imageDataUrl);
         handleHasImage();

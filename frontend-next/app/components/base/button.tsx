@@ -27,7 +27,9 @@ const CustomButton = forwardRef<HTMLButtonElement, CustomButtonProps>(
         {...props}
       />
     );
-  }
+  },
 );
+
+CustomButton.displayName = "CustomButton";
 
 export { CustomButton };

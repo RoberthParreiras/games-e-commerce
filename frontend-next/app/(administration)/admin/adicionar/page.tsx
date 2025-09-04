@@ -61,12 +61,12 @@ export default function CreateProduct() {
   return (
     <FormProvider {...form}>
       <form
-        className="w-full max-w-5xl mx-auto"
-        onSubmit={form.handleSubmit(onSubmit as any)}
+        className="mx-auto w-full max-w-5xl"
+        onSubmit={form.handleSubmit(onSubmit as SubmitHandler<FormInput>)}
       >
         <CropImageModal />
         {form.formState.errors.image && (
-          <p className="text-sm font-medium text-destructive">
+          <p className="text-destructive text-sm font-medium">
             {form.formState.errors.image.message}
           </p>
         )}

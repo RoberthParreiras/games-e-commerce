@@ -1,43 +1,56 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { CustomButton } from "@/app/components/base/button";
 import { GameCardAdmin } from "@/app/components/gameCardAdmin";
 import { GameFilter } from "@/app/components/gameFilter";
 import { GamePagination } from "@/app/components/gamePagination";
 import { getGames } from "@/app/lib/game-data";
+import { GameResponse } from "@/app/types/game";
 
-export default async function Dashboard({
-  searchParams,
-}: {
-  searchParams?: {
-    page?: string;
-    limitPerPage?: string;
-    minPrice?: string;
-    maxPrice?: string;
-  };
-}) {
-  const {
-    page: pageStr = "1",
-    limitPerPage: limitPerPageStr = "10",
-    minPrice: minPriceStr,
-    maxPrice: maxPriceStr,
-  } = (await searchParams) ?? {};
-  const minPriceInCents = Number(minPriceStr) * 100;
-  const maxPriceInCents = Number(maxPriceStr) * 100;
+export default function Dashboard() {
+  const searchParams = useSearchParams();
+  const [gameList, setGameList] = useState<GameResponse | null>(null);
 
-  const page = Number(pageStr);
-  const limitPerPage = Number(limitPerPageStr);
-  const minPrice = minPriceStr ? minPriceInCents : undefined;
-  const maxPrice = maxPriceStr ? maxPriceInCents : undefined;
+  useEffect(() => {
+    const pageStr = searchParams.get("page") ?? "1";
+    const limitPerPageStr = searchParams.get("limitPerPage") ?? "10";
+    const minPriceStr = searchParams.get("minPrice");
+    const maxPriceStr = searchParams.get("maxPrice");
 
-  const gameList = await getGames({ page, limitPerPage, minPrice, maxPrice });
+    const minPriceInCents = Number(minPriceStr) * 100;
+    const maxPriceInCents = Number(maxPriceStr) * 100;
+
+    const page = Number(pageStr);
+    const limitPerPage = Number(limitPerPageStr);
+    const minPrice = minPriceStr ? minPriceInCents : undefined;
+    const maxPrice = maxPriceStr ? maxPriceInCents : undefined;
+
+    async function fetchGames() {
+      const data = await getGames({ page, limitPerPage, minPrice, maxPrice });
+      setGameList(data);
+    }
+
+    fetchGames();
+  }, [searchParams]);
+
+  if (!gameList) {
+    // TODO add a skeleton
+    return <div>Loading...</div>;
+  }
+
   return (
     <div>
-      <Link href="/admin/adicionar" >
-        <CustomButton type="button" className="text-2xl my-8 ml-4 w-1/3">Add game</CustomButton>
+      <Link href="/admin/adicionar">
+        <CustomButton type="button" className="my-8 ml-4 w-1/3 text-2xl">
+          Add game
+        </CustomButton>
       </Link>
       <GameFilter />
-      <section className="bg-[#393E46] p-5 grid gap-8 grid-cols-1 lg:grid-cols-3 text-[#DFD0B8] mt-16">
+      <section className="mt-16 grid grid-cols-1 gap-8 bg-[#393E46] p-5 text-[#DFD0B8] lg:grid-cols-3">
         {gameList.games.map((game) => (
           <GameCardAdmin game={game} key={game.id} />
         ))}

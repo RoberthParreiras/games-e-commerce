@@ -44,14 +44,15 @@ export default function EditProduct() {
       router.push("/signin");
       router.refresh();
     }
-    
+
     async function fetchProduct() {
       const data: SingleGameResponse = await apiFetch(`/games/${id}`);
 
-      setProduct({
+      const gameData = {
         image: data.game.image || undefined,
         oldImage: data.game.image || undefined,
-      });
+      };
+      setProduct(gameData);
 
       form.reset({
         name: data.game.name || "",
@@ -64,14 +65,14 @@ export default function EditProduct() {
     if (id) {
       fetchProduct();
     }
-  }, [id, status]);
+  }, [id, status, form, router]);
 
   const onSubmit: SubmitHandler<FormOutput> = async (data) => {
     const formData = new FormData();
 
-    if (typeof data.image !== "string") {
+    if (typeof data.image !== "string" && product?.oldImage) {
       formData.append("file", data.image, "image.jpg");
-      formData.append("oldImage", product?.oldImage!); // send the old image url for deletion
+      formData.append("oldImage", product.oldImage); // send the old image url for deletion
     } else {
       formData.append("image", data.image);
     }
@@ -90,8 +91,9 @@ export default function EditProduct() {
   };
 
   async function onDelete() {
+    if (!product?.oldImage) return;
     const formData = new FormData();
-    formData.append("image", product?.oldImage!);
+    formData.append("image", product?.oldImage);
 
     apiFetch(`/games/${id}`, {
       method: "DELETE",
@@ -105,12 +107,12 @@ export default function EditProduct() {
   return (
     <FormProvider {...form}>
       <form
-        className="w-full max-w-5xl mx-auto mt-16"
-        onSubmit={form.handleSubmit(onSubmit as any)}
+        className="mx-auto mt-16 w-full max-w-5xl"
+        onSubmit={form.handleSubmit(onSubmit as SubmitHandler<FormInput>)}
       >
-        <CropImageModalEdit image={product?.image!} />
+        <CropImageModalEdit image={product?.image ?? ""} />
         {form.formState.errors.image && (
-          <p className="text-sm font-medium text-destructive">
+          <p className="text-destructive text-sm font-medium">
             {form.formState.errors.image.message}
           </p>
         )}

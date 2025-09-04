@@ -3,13 +3,7 @@ import { ControllerRenderProps } from "react-hook-form";
 
 type PriceInputProps = CurrencyInputProps & ControllerRenderProps;
 
-export function PriceInput({
-  onChange,
-  onBlur,
-  value,
-  name,
-  ref,
-}: PriceInputProps) {
+export function PriceInput({ onChange, onBlur, value, ref }: PriceInputProps) {
   return (
     <CurrencyInput
       id="price-input-library"
@@ -21,7 +15,7 @@ export function PriceInput({
       onBlur={onBlur}
       value={value}
       ref={ref}
-      className="bg-[#DFD0B8] text-[#222831] h-12 w-full px-3 rounded"
+      className="h-12 w-full rounded bg-[#DFD0B8] px-3 text-[#222831]"
     />
   );
 }

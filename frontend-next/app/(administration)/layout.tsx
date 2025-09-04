@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth";
 import { redirect, RedirectType } from "next/navigation";
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import {} from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "../lib/auth";
 
 export default async function Layout({
   children,
@@ -17,5 +18,5 @@ export default async function Layout({
     redirect("/signout-expired", RedirectType.push);
   }
 
-  return <div className="w-full max-w-7xl mx-auto px-4">{children}</div>;
+  return <div className="mx-auto w-full max-w-7xl px-4">{children}</div>;
 }

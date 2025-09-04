@@ -8,6 +8,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import z from "zod";
+import { ComponentProps, ReactElement } from "react";
 
 import CreateProduct from "./page";
 import { apiFetch } from "@/app/api/fetch";
@@ -32,9 +33,9 @@ jest.mock("@/app/schemas/gameFormSchema", () => ({
 // Mock child components
 jest.mock("@/app/components/imageModal", () => ({
   __esModule: true,
-  default: () => {
+  default: function MockImageModal() {
     const { setValue } = useFormContext();
-		
+
     return (
       <input
         type="file"
@@ -57,7 +58,7 @@ jest.mock("@/app/components/productForm", () => ({
 
 // Mock UI primitives to allow interaction
 jest.mock("@/app/components/ui/input", () => {
-  const Input = (props: any) => <input {...props} />;
+  const Input = (props: ComponentProps<"input">) => <input {...props} />;
   return { Input };
 });
 
@@ -71,14 +72,14 @@ jest.mock("@/app/components/ui/form", () => {
       name,
       render,
     }: {
-      control: any;
+      control: unknown;
       name: string;
-      render: any;
+      render: (props: { field: unknown }) => ReactElement;
     }) => (
       <Controller
         name={name}
-        control={control}
-        render={({ field }: any) => render({ field })}
+        control={control as never}
+        render={({ field }) => render({ field })}
       />
     ),
   };
@@ -91,7 +92,7 @@ jest.mock("@/app/components/base/button", () => ({
     ...props
   }: {
     children: React.ReactNode;
-    [key: string]: any;
+    [key: string]: unknown;
   }) => <button {...props}>{children}</button>,
 }));
 
@@ -157,7 +158,7 @@ describe("CreateProduct Page", () => {
         expect.objectContaining({
           method: "POST",
           accessToken: "fake-token",
-        })
+        }),
       );
     });
 

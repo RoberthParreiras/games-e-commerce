@@ -1,7 +1,6 @@
-// filepath: /home/test-express/frontend-next/app/components/gamePagination.tsx
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import {
   Pagination,
@@ -21,7 +20,6 @@ export function GamePagination({ totalPages }: GamePaginationProps) {
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const { replace } = useRouter();
   const currentPage = Number(searchParams.get("page")) || DEFAULT_PAGE;
 
   const createPageURL = (pageNumber: number | string) => {
@@ -32,13 +30,13 @@ export function GamePagination({ totalPages }: GamePaginationProps) {
 
   return (
     <Pagination className="w-1/3">
-      <PaginationContent className="flex justify-between w-full">
+      <PaginationContent className="flex w-full justify-between">
         <PaginationItem className="w-1/3">
           <PaginationPrevious
             href={createPageURL(currentPage - 1)}
             className={
               currentPage <= 1
-                ? "pointer-events-none opacity-50 text-center"
+                ? "pointer-events-none text-center opacity-50"
                 : ""
             }
           />
@@ -48,7 +46,7 @@ export function GamePagination({ totalPages }: GamePaginationProps) {
             Page {currentPage} of {totalPages}
           </PaginationLink>
         </PaginationItem>
-        <PaginationItem className="text-center w-1/3">
+        <PaginationItem className="w-1/3 text-center">
           <PaginationNext
             href={createPageURL(currentPage + 1)}
             className={

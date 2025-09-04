@@ -12,6 +12,7 @@ import { Controller } from "react-hook-form";
 
 import EditProduct from "./page";
 import { apiFetch } from "@/app/api/fetch";
+import { ComponentProps, ReactElement } from "react";
 
 // Mock external modules and components
 jest.mock("next-auth/react");
@@ -34,25 +35,11 @@ jest.mock("@/app/components/imageModal", () => ({
 }));
 
 jest.mock("@/app/components/ui/input", () => {
-  const Input = (props: any) => {
+  const Input = (props: ComponentProps<"input">) => {
     return <input {...props} />;
   };
   return { Input };
 });
-
-jest.mock("@/app/components/ui/form", () => ({
-  ...jest.requireActual("@/app/components/ui/form"), // Keep original FormProvider etc.
-
-  FormField: ({
-    render,
-    control,
-    name,
-  }: {
-    render: (arg: { field: any }) => React.ReactNode;
-    control: any;
-    name: string;
-  }) => render({ field: { name, control } }),
-}));
 
 jest.mock("@/app/components/ui/form", () => {
   const actual = jest.requireActual("@/app/components/ui/form");
@@ -64,14 +51,14 @@ jest.mock("@/app/components/ui/form", () => {
       name,
       render,
     }: {
-      control: any;
+      control: unknown;
       name: string;
-      render: any;
+      render: (props: { field: unknown }) => ReactElement;
     }) => (
       <Controller
         name={name}
-        control={control}
-        render={({ field }: any) => render({ field })}
+        control={control as never}
+        render={({ field }) => render({ field })}
       />
     ),
   };
@@ -98,7 +85,7 @@ jest.mock("@/app/components/base/button", () => ({
     ...props
   }: {
     children: React.ReactNode;
-    [key: string]: any;
+    [key: string]: unknown;
   }) => <button {...props}>{children}</button>,
 }));
 
@@ -147,7 +134,7 @@ describe("EditProduct Page", () => {
   it("fetches product data and populates the form on mount", async () => {
     render(<EditProduct />);
     expect(
-      await screen.findByDisplayValue(mockGameData.game.name)
+      await screen.findByDisplayValue(mockGameData.game.name),
     ).toBeInTheDocument();
   });
 
@@ -177,7 +164,7 @@ describe("EditProduct Page", () => {
         expect.objectContaining({
           method: "PATCH",
           accessToken: "fake-token",
-        })
+        }),
       );
       const lastCall = mockedApiFetch.mock.calls.pop();
       const formData = lastCall?.[1]?.body as FormData;
@@ -205,7 +192,7 @@ describe("EditProduct Page", () => {
         expect.objectContaining({
           method: "DELETE",
           accessToken: "fake-token",
-        })
+        }),
       );
       const lastCall = mockedApiFetch.mock.calls.pop();
       const formData = lastCall?.[1]?.body as FormData;

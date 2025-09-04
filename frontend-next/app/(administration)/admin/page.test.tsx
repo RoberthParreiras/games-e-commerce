@@ -3,14 +3,17 @@ import { render, screen, waitFor } from "@testing-library/react";
 import Dashboard from "./page";
 import { getGames } from "@/app/lib/game-data";
 
-// Mock child components and modules
+jest.mock("next/navigation", () => ({
+  useSearchParams: jest.fn(),
+}));
+
 jest.mock("@/app/components/base/button", () => ({
   CustomButton: ({
     children,
     ...props
   }: {
     children: React.ReactNode;
-    [key: string]: any;
+    [key: string]: unknown;
   }) => <button {...props}>{children}</button>,
 }));
 
@@ -31,17 +34,24 @@ jest.mock("@/app/components/gamePagination", () => ({
 }));
 
 jest.mock("next/link", () => {
-  return ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  );
+  const MockLink = ({
+    children,
+    href,
+  }: {
+    children: React.ReactNode;
+    href: string;
+  }) => <a href={href}>{children}</a>;
+  MockLink.displayName = "MockLink";
+  return MockLink;
 });
 
-// Mock the data fetching function
 jest.mock("@/app/lib/game-data", () => ({
   getGames: jest.fn(),
 }));
 
 const mockedGetGames = getGames as jest.Mock;
+const mockedUseSearchParams =
+  jest.requireMock("next/navigation").useSearchParams;
 
 describe("Dashboard Page", () => {
   beforeEach(() => {
@@ -49,6 +59,7 @@ describe("Dashboard Page", () => {
   });
 
   it("should render and fetch games with default parameters", async () => {
+    mockedUseSearchParams.mockReturnValue(new URLSearchParams());
     const mockGameData = {
       games: [
         { id: "1", name: "Game One" },
@@ -58,83 +69,77 @@ describe("Dashboard Page", () => {
     };
     mockedGetGames.mockResolvedValue(mockGameData);
 
-    // Since Dashboard is an async Server Component, we await its result
-    const Page = await Dashboard({ searchParams: {} });
-    render(Page);
-
-    await waitFor(() => {
-      expect(mockedGetGames).toHaveBeenCalledWith({
-        page: 1,
-        limitPerPage: 10,
-        minPrice: undefined,
-        maxPrice: undefined,
-      });
-    });
+    render(<Dashboard />);
 
     expect(
-      screen.getByRole("button", { name: /add game/i })
+      await screen.findByRole("button", { name: /add game/i }),
     ).toBeInTheDocument();
-    expect(screen.getByTestId("game-filter")).toBeInTheDocument();
 
+    expect(mockedGetGames).toHaveBeenCalledWith({
+      page: 1,
+      limitPerPage: 10,
+      minPrice: undefined,
+      maxPrice: undefined,
+    });
+
+    expect(screen.getByTestId("game-filter")).toBeInTheDocument();
     expect(screen.getAllByTestId("game-card-admin")).toHaveLength(2);
     expect(screen.getByText("Game One")).toBeInTheDocument();
-
     expect(screen.getByTestId("game-pagination")).toHaveTextContent(
-      "Total Pages: 10"
+      "Total Pages: 10",
     );
   });
 
   it("should fetch games using provided search parameters", async () => {
+    const searchParams = new URLSearchParams({
+      page: "3",
+      limitPerPage: "5",
+      minPrice: "20",
+      maxPrice: "60",
+    });
+    mockedUseSearchParams.mockReturnValue(searchParams);
+
     const mockGameData = {
       games: [{ id: "3", name: "Filtered Game" }],
       totalPages: 1,
     };
     mockedGetGames.mockResolvedValue(mockGameData);
 
-    const searchParams = {
-      page: "3",
-      limitPerPage: "5",
-      minPrice: "20",
-      maxPrice: "60",
-    };
+    render(<Dashboard />);
 
-    const Page = await Dashboard({ searchParams });
-    render(Page);
+    expect(await screen.findByText("Filtered Game")).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(mockedGetGames).toHaveBeenCalledWith({
-        page: 3,
-        limitPerPage: 5,
-        minPrice: 2000,
-        maxPrice: 6000,
-      });
+    expect(mockedGetGames).toHaveBeenCalledWith({
+      page: 3,
+      limitPerPage: 5,
+      minPrice: 2000,
+      maxPrice: 6000,
     });
 
     expect(screen.getAllByTestId("game-card-admin")).toHaveLength(1);
-    expect(screen.getByText("Filtered Game")).toBeInTheDocument();
     expect(screen.getByTestId("game-pagination")).toHaveTextContent(
-      "Total Pages: 1"
+      "Total Pages: 1",
     );
   });
 
   it("should correctly handle an empty list of games", async () => {
+    mockedUseSearchParams.mockReturnValue(new URLSearchParams());
     const mockGameData = {
       games: [],
       totalPages: 0,
     };
     mockedGetGames.mockResolvedValue(mockGameData);
 
-    const Page = await Dashboard({ searchParams: {} });
-    render(Page);
+    render(<Dashboard />);
 
     await waitFor(() => {
       expect(mockedGetGames).toHaveBeenCalled();
     });
 
-    expect(screen.queryByTestId("game-card-admin")).not.toBeInTheDocument();
-
-    expect(screen.getByTestId("game-pagination")).toHaveTextContent(
-      "Total Pages: 0"
+    expect(await screen.findByTestId("game-pagination")).toHaveTextContent(
+      "Total Pages: 0",
     );
+
+    expect(screen.queryByTestId("game-card-admin")).not.toBeInTheDocument();
   });
 });

@@ -1,8 +1,8 @@
 import { signOut } from "next-auth/react";
 
-interface FetchOptions extends RequestInit {
+interface FetchOptions extends Omit<RequestInit, "body"> {
   accessToken?: string;
-  body?: any;
+  body?: Record<string, unknown> | FormData;
 }
 
 export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
