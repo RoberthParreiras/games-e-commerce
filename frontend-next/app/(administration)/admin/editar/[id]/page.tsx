@@ -15,28 +15,21 @@ import { CustomButton } from "@/app/components/base/button";
 import { apiFetch } from "@/app/api/fetch";
 import { SingleGameResponse } from "@/app/types/game";
 
-type FormValues = z.infer<typeof formSchemaEdit>;
+type FormInput = z.input<typeof formSchemaEdit>;
+type FormOutput = z.output<typeof formSchemaEdit>;
 
 export default function EditProduct() {
   const { id } = useParams();
 
   const router = useRouter();
-  const { data: session, status } =
-    useSession();
-    // {
-    //   required: true,
-    //   onUnauthenticated() {
-    //     router.push("/signin");
-    //     router.refresh();
-    //   },
-    // }
-  console.log("session", session);
+  const { data: session, status } = useSession();
+
   const [product, setProduct] = useState<{
     image: string | undefined;
     oldImage: string | undefined;
   } | null>(null);
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormInput>({
     resolver: zodResolver(formSchemaEdit),
     defaultValues: {
       name: "",
@@ -47,11 +40,11 @@ export default function EditProduct() {
   });
 
   useEffect(() => {
-    console.log(status);
     if (status === "unauthenticated") {
       router.push("/signin");
       router.refresh();
     }
+    
     async function fetchProduct() {
       const data: SingleGameResponse = await apiFetch(`/games/${id}`);
 
@@ -73,7 +66,7 @@ export default function EditProduct() {
     }
   }, [id, status]);
 
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+  const onSubmit: SubmitHandler<FormOutput> = async (data) => {
     const formData = new FormData();
 
     if (typeof data.image !== "string") {
@@ -85,13 +78,15 @@ export default function EditProduct() {
 
     formData.append("name", data.name);
     formData.append("description", data.description);
-    formData.append("price", data.price);
+    formData.append("price", String(data.price));
 
     await apiFetch(`/games/${id}`, {
       method: "PATCH",
       body: formData,
       accessToken: session?.accessToken,
     });
+
+    router.push("/admin");
   };
 
   async function onDelete() {
@@ -103,13 +98,15 @@ export default function EditProduct() {
       body: formData,
       accessToken: session?.accessToken,
     });
+
+    router.push("/admin");
   }
 
   return (
     <FormProvider {...form}>
       <form
         className="w-full max-w-5xl mx-auto mt-16"
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onSubmit as any)}
       >
         <CropImageModalEdit image={product?.image!} />
         {form.formState.errors.image && (

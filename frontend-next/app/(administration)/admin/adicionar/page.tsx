@@ -19,7 +19,6 @@ type FormOutput = z.output<typeof formSchema>;
 export default function CreateProduct() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  console.log(session);
 
   useEffect(() => {
     if (status === "unauthenticated") {
