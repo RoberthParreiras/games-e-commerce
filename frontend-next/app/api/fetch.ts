@@ -2,13 +2,18 @@ import { signOut } from "next-auth/react";
 
 interface FetchOptions extends Omit<RequestInit, "body"> {
   accessToken?: string;
-  body?: Record<string, unknown> | FormData;
+  body?: Record<string, unknown> | FormData | string;
+  isAuthRoute?: boolean;
 }
 
 export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "";
-  const url = `${base}${endpoint}`;
+  let base = process.env.NEXT_PUBLIC_API_URL ?? "";
 
+  // If window is undefined, we're on the server.
+  if (typeof window === "undefined") {
+    base = process.env.INTERNAL_API_URL ?? "";
+  }
+  const url = `${base}${endpoint}`;
   const headers = new Headers(options.headers);
 
   if (options.accessToken) {
@@ -33,11 +38,15 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
     body,
   });
 
-  if (response.status === 401) {
+  if (response.status === 401 && !options.isAuthRoute) {
     signOut({ callbackUrl: "/signin" });
   }
 
   if (!response.ok) {
+    if (options.isAuthRoute) {
+      return response;
+    }
+
     const errorData = await response.json().catch(() => ({
       message: `Request failed with status ${response.status}`,
     }));
@@ -47,6 +56,10 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
   // Handle responses with no content
   if (response.status === 204) {
     return null;
+  }
+
+  if (options.isAuthRoute) {
+    return response;
   }
 
   return response.json();

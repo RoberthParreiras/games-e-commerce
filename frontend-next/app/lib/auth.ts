@@ -1,6 +1,7 @@
 import { NextAuthOptions, Session } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { apiFetch } from "../api/fetch";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,16 +17,15 @@ export const authOptions: NextAuthOptions = {
         }
 
         const { email, password } = credentials;
-        const base = process.env.NEXT_PUBLIC_API_URL ?? "";
-        const url = `${base}/auth/login`;
 
-        const res = await fetch(url, {
+        const res = await apiFetch("/auth/login", {
           method: "POST",
-          body: JSON.stringify({ email, password }),
+          body: { email, password },
           headers: { "Content-Type": "application/json" },
+          isAuthRoute: true,
         });
 
-        if (!res.ok) {
+        if (!res || !res.ok) {
           console.error("Failed to login:", await res.text());
           return null;
         }
