@@ -57,7 +57,7 @@ export default function EditProduct() {
       form.reset({
         name: data.game.name || "",
         description: data.game.description || "",
-        price: data.game.price?.toString() || "",
+        price: data.game.price.toString() || "",
         image: data.game.image || undefined,
       });
     }
@@ -69,7 +69,7 @@ export default function EditProduct() {
 
   const onSubmit: SubmitHandler<FormOutput> = async (data) => {
     const formData = new FormData();
-
+    console.log(data.price);
     if (typeof data.image !== "string" && product?.oldImage) {
       formData.append("file", data.image, "image.jpg");
       formData.append("oldImage", product.oldImage); // send the old image url for deletion

@@ -58,6 +58,7 @@ export class GamesService extends BaseService {
     const gameReturn = {
       ...game,
       id: convertBytesToUuid(game.id),
+      price: centsToReal(game.price.toNumber()),
     };
 
     return gameReturn;

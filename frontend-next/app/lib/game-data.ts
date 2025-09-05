@@ -21,11 +21,11 @@ export async function getGames({
 
   const queryString = params.toString();
   const queryParams = `/games${queryString ? `?${queryString}` : ""}`;
-  console.log(queryParams);
+
   const data = await apiFetch(queryParams, {
     method: "GET",
     cache: "no-cache",
   });
-  
+
   return data as GameResponse;
 }

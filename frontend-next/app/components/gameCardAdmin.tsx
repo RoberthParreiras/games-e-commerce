@@ -13,9 +13,9 @@ export function GameCardAdmin({ game }: { game: GameInfo }) {
         height={400}
       />
       <div className="mt-6 flex w-full flex-col gap-10 text-center">
-        <h3 className="text-5xl">{game.name}</h3>
+        <h3 className="text-4xl">{game.name}</h3>
         <p className="text-2xl">{game.description}</p>
-        <span className="text-3xl">{game.price}</span>
+        <span className="text-3xl">R$ {game.price}</span>
         <div className="rounded-2xl bg-[#DFD0B8] py-4 text-[#393E46] hover:bg-[#948979]">
           <Link href={`/admin/editar/${game.id}`} className="text-5xl">
             Edit

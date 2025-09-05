@@ -10,6 +10,7 @@ export function PriceInput({ onChange, onBlur, value, ref }: PriceInputProps) {
       name="price"
       placeholder="R$ 0,00"
       decimalsLimit={2}
+      decimalScale={2}
       intlConfig={{ locale: "pt-BR", currency: "BRL" }}
       onValueChange={(value) => onChange(value)}
       onBlur={onBlur}
