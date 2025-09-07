@@ -69,7 +69,7 @@ export default function EditProduct() {
 
   const onSubmit: SubmitHandler<FormOutput> = async (data) => {
     const formData = new FormData();
-    console.log(data.price);
+
     if (typeof data.image !== "string" && product?.oldImage) {
       formData.append("file", data.image, "image.jpg");
       formData.append("oldImage", product.oldImage); // send the old image url for deletion

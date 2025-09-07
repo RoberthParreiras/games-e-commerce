@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import FormData from 'form-data';
+import FormData = require('form-data');
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()

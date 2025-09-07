@@ -58,7 +58,7 @@ export class GamesService extends BaseService {
     const gameReturn = {
       ...game,
       id: convertBytesToUuid(game.id),
-      price: centsToReal(game.price.toNumber()),
+      price: centsToReal(Number(game.price)),
     };
 
     return gameReturn;
@@ -107,7 +107,7 @@ export class GamesService extends BaseService {
     const gamesListReturn = gamesList.map((game) => ({
       ...game,
       id: convertBytesToUuid(game.id),
-      price: centsToReal(game.price.toNumber()),
+      price: centsToReal(Number(game.price)),
     }));
 
     return { gamesListReturn, totalPages };

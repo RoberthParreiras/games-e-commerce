@@ -39,7 +39,7 @@ export default function Dashboard() {
 
   if (!gameList) {
     // TODO add a skeleton
-    return <div>Loading...</div>;
+    return <div>There is no game</div>;
   }
 
   return (

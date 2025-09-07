@@ -12,6 +12,9 @@ COPY . .
 
 RUN bun run build
 
+# Add this line to fix permissions
+RUN chmod -R 755 ./.next/static
+
 # Stage 2: Create the production image
 FROM oven/bun:1 AS runner
 
@@ -19,11 +22,10 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 
-CMD [ "bun", "start" ]
+CMD [ "bun", "server.js" ]

@@ -1,0 +1,19 @@
+services:
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - next_static_volume:/var/www/html/.next/static:ro
+    networks:
+      - app-network
+
+volumes:
+  next_static_volume:
+    external: true
+
+networks:
+  app-network:
+    external: true
