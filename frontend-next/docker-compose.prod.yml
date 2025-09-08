@@ -6,7 +6,7 @@ services:
     volumes:
       - next_static_volume:/app/.next/static
     env_file:
-      - ./.env
+      - ./.env.production
     restart: unless-stopped
     environment:
       HOSTNAME: '0.0.0.0'
