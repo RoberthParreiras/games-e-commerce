@@ -38,14 +38,16 @@ export default function Dashboard() {
   }, [searchParams]);
 
   if (!gameList) {
-    // TODO add a skeleton
     return <div>There is no game</div>;
   }
 
   return (
     <div>
       <Link href="/admin/adicionar">
-        <CustomButton type="button" className="my-8 ml-4 w-1/3 text-2xl">
+        <CustomButton
+          type="button"
+          className="my-8 ml-4 w-1/3 text-xl md:text-2xl"
+        >
           Add game
         </CustomButton>
       </Link>
