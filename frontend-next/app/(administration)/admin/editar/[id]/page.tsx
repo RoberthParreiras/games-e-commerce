@@ -117,7 +117,7 @@ export default function EditProduct() {
           </p>
         )}
         <GameFormEdit />
-        <div className="mb-4 flex justify-between">
+        <div className="mb-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <CustomButton visual="primary" onClick={() => router.push("/admin")}>
             Cancel
           </CustomButton>
@@ -131,9 +131,11 @@ export default function EditProduct() {
           description="This action cannot be undone. This will permanently delete
           the game and remove the data from our servers."
         >
-          <CustomButton visual="destructive" type="button">
-            Delete
-          </CustomButton>
+          <div className="flex w-full justify-center sm:justify-start">
+            <CustomButton visual="destructive" type="button">
+              Delete
+            </CustomButton>
+          </div>
         </CustomAlertDialog>
       </form>
     </FormProvider>

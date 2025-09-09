@@ -217,7 +217,7 @@ function CropImageModal() {
               </div>
             </div>
           ) : (
-            <div className="mb-4 flex flex-col items-center md:flex-row md:justify-between">
+            <div className="my-4 flex flex-col items-center md:flex-row md:justify-between">
               <label
                 htmlFor="file-upload"
                 className="mb-4 flex h-12 w-52 items-center justify-center rounded bg-[#DFD0B8] text-center text-[#222831] hover:cursor-pointer hover:bg-[#cbb89d]"

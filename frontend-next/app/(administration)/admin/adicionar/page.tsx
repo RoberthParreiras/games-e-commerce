@@ -71,7 +71,7 @@ export default function CreateProduct() {
           </p>
         )}
         <GameForm />
-        <div className="mb-4 flex justify-between">
+        <div className="mb-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <CustomButton visual="primary" onClick={() => router.push("/admin")}>
             Cancel
           </CustomButton>

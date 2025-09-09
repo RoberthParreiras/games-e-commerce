@@ -26,7 +26,7 @@ function CropImageModalEdit({ image }: { image: string }) {
   const [crop, setCrop] = useState<Crop>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState<number>(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<PixelArea | null>(
-    null
+    null,
   );
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -59,7 +59,7 @@ function CropImageModalEdit({ image }: { image: string }) {
     (croppedArea: any, croppedAreaPixelsArg: PixelArea) => {
       setCroppedAreaPixels(croppedAreaPixelsArg);
     },
-    []
+    [],
   );
 
   const showCroppedImage = useCallback(async () => {
@@ -70,7 +70,7 @@ function CropImageModalEdit({ image }: { image: string }) {
         croppedAreaPixels,
         undefined,
         undefined,
-        400
+        400,
       );
 
       if (!cropped) {
@@ -104,13 +104,13 @@ function CropImageModalEdit({ image }: { image: string }) {
         handleOpen();
       }
     },
-    []
+    [],
   );
 
   return (
     <div>
       {hasImageSrc ? (
-        <div className="flex flex-start">
+        <div className="flex-start flex">
           <Modal open={open} onClose={handleClose}>
             <Box
               sx={{
@@ -142,7 +142,7 @@ function CropImageModalEdit({ image }: { image: string }) {
                 />
               </div>
               <div className="flex flex-col justify-center pt-4">
-                <div className="flex flex-col justify-center w-full max-w-md mx-auto">
+                <div className="mx-auto flex w-full max-w-md flex-col justify-center">
                   <Typography variant="overline">Zoom</Typography>
                   <Slider
                     value={zoom}
@@ -153,7 +153,7 @@ function CropImageModalEdit({ image }: { image: string }) {
                     onChange={(_, value) => setZoom(value as number)}
                   />
                 </div>
-                <div className="mx-auto w-full max-w-md gap-4 flex flex-row justify-between mt-4">
+                <div className="mx-auto mt-4 flex w-full max-w-md flex-row justify-between gap-4">
                   <ButtonMui
                     onClick={() => {
                       handleClose();
@@ -197,11 +197,11 @@ function CropImageModalEdit({ image }: { image: string }) {
       ) : (
         <>
           {imageSrc ? (
-            <div className="flex flex-col md:flex-row items-center md:justify-between mb-4">
-              <div className="flex justify-around md:justify-center md:gap-8 mb-4">
+            <div className="mb-4 flex flex-col items-center md:flex-row md:justify-between">
+              <div className="mb-4 flex flex-col justify-around gap-4 md:flex-row md:justify-center md:gap-8">
                 <label
                   htmlFor="file-upload"
-                  className="bg-[#DFD0B8] text-[#222831] text-center rounded h-12 w-52 flex items-center justify-center hover:bg-[#cbb89d] hover:cursor-pointer"
+                  className="flex h-12 w-52 items-center justify-center rounded bg-[#DFD0B8] text-center text-[#222831] hover:cursor-pointer hover:bg-[#cbb89d]"
                 >
                   <span>Change the image</span>
                   <Input
@@ -212,17 +212,19 @@ function CropImageModalEdit({ image }: { image: string }) {
                     className="hidden"
                   />
                 </label>
-                <CustomButton visual="primary" onClick={() => setImageSrc("")}>Remove Image</CustomButton>
+                <CustomButton visual="primary" onClick={() => setImageSrc("")}>
+                  Remove Image
+                </CustomButton>
               </div>
               <div className="border">
                 <img src={croppedImage!} alt="preview image" />
               </div>
             </div>
           ) : (
-            <div className="flex flex-col md:flex-row items-center md:justify-between mb-4">
+            <div className="mb-4 flex flex-col items-center md:flex-row md:justify-between">
               <label
                 htmlFor="file-upload"
-                className="bg-[#DFD0B8] text-[#222831] mb-4 text-center rounded h-12 w-52 flex items-center justify-center hover:bg-[#cbb89d] hover:cursor-pointer"
+                className="mb-4 flex h-12 w-52 items-center justify-center rounded bg-[#DFD0B8] text-center text-[#222831] hover:cursor-pointer hover:bg-[#cbb89d]"
               >
                 <span>Select an image</span>
                 <Input
