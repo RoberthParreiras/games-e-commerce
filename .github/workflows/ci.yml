@@ -90,9 +90,7 @@ jobs:
         run: |
           pip install uv
           uv venv
-          if ["${{ steps.cache-uv.outputs.cache-hit }}" != "true"]; then
-            uv sync
-          fi
+          uv sync
 
       - name: Run Tests
         run: |
