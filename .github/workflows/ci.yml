@@ -7,24 +7,40 @@ on:
     branches: [main]
 
 jobs:
-  # api_nest:
-  #   runs_on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: ./api_nest
-  #   stategy:
-  #     matrix:
-  #       node-version: [18.x, 20.x]
-  #   steps:
-  #   - user: actions/checkout@v5
-  #   - name: User Node.js &{{ matrix.node-version }}
-  #     user: actions/setup-node@v5
-  #     with:
-  #       node-version: ${{ matrix.node-version }}
-  #   - name: Install Dependencies
-  #     run: npm install
-  #   - name: Run Tests
-  #     run: npm test
+  api_nest:
+    runs_on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./api_nest
+    stategy:
+      matrix:
+        node-version: [20.x]
+
+    env:
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER }}
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+
+    steps:
+    - uses: actions/checkout@v5
+    - name: User Node.js &{{ matrix.node-version }}
+      uses: actions/setup-node@v5
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+
+    - name: Start services with Docker Compose
+      run: docker compose -f docker-compose.yml up -d
+
+    - name: Install Dependencies
+      run: bun install
+
+    - name: Run Tests
+      run: bun run test
 
   # frontend-next:
   #   runs-on: ubuntu-latest
