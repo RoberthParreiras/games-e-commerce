@@ -8,11 +8,11 @@ on:
 
 jobs:
   api_nest:
-    runs_on: ubuntu-latest
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./api_nest
-    stategy:
+    strategy:
       matrix:
         node-version: [20.x]
 
