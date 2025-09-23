@@ -21,7 +21,7 @@ jobs:
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
       REDIS_HOST: ${{ secrets.REDIS_HOST }}
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
-      DATABASE_URL: "mysql://root:${{ secrets.MYSQL_ROOT_PASSWORD }}@127.0.0.1:3307/${{ secrets.MYSQL_DATABASE }}"
+      DATABASE_URL: ${{ secrets.CI_DATABASE_URL }}
 
     steps:
       - uses: actions/checkout@v5
