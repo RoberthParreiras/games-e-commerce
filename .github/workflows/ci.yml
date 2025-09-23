@@ -49,12 +49,53 @@ jobs:
 
   image_service:
     runs-on: ubuntu-latest
+    services:
+      minio:
+        image: minio/minio
+        env:
+          MINIO_ROOT_USER: ${{ secrets.MINIO_ROOT_USER }}
+          MINIO_ROOT_PASSWORD: ${{ secrets.MINIO_ROOT_PASSWORD }}
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 5
+          --health-start-period 10s
+        # command: server /data --console-address :9001
+
+      mongodb:
+        image: mongo
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_INITDB_ROOT_USERNAME }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}
+        ports:
+          - 27017:27017
+        # Healthcheck for MongoDB
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
     defaults:
       run:
         working-directory: ./image_service
     strategy:
       matrix:
         python-version: ["3.12"]
+    env:
+      MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
+      MINIO_ROOT_USER: ${{ secrets.MINIO_ROOT_USER }}
+      MINIO_ROOT_PASSWORD: ${{ secrets.MINIO_ROOT_PASSWORD }}
+      MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
+      MINIO_SECURE: ${{ secrets.MINIO_SECURE }}
+      MONGO_HOST: ${{ secrets.MONGO_HOST }}
+      MONGO_PORT: ${{ secrets.MONGO_PORT }}
+      MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_INITDB_ROOT_USERNAME }}
+      MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}
+      
     steps:
     - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
