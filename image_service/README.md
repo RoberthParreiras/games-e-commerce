@@ -96,7 +96,7 @@ The following endpoints are available:
 | `POST`   | `/image/upload/`      | Upload a new image. Requires `user_id` and a file.                 |
 | `PUT`    | `/image/update/`      | Update an existing image. Requires `image_id`, `user_id`, and a file. |
 | `GET`    | `/image/{image_id}`   | Retrieve metadata for a specific image.                            |
-| `DELETE` | `/image/{image_id}`   | Delete an image and its metadata.                                  |
+| `DELETE` | `/image/delete/`   | Delete an image and its metadata.                                  |
 | `GET`    | `/docs`               | Access the FastAPI Swagger UI for interactive API documentation.   |
 
 ---
