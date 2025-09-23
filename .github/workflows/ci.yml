@@ -22,28 +22,29 @@ jobs:
       MYSQL_USER: ${{ secrets.MYSQL_USER }}
       REDIS_HOST: ${{ secrets.REDIS_HOST }}
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
-    - uses: actions/checkout@v5
-    - name: User Node.js &{{ matrix.node-version }}
-      uses: actions/setup-node@v5
-      with:
-        node-version: ${{ matrix.node-version }}
-    
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@v5
+      - name: User Node.js &{{ matrix.node-version }}
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Start services with Docker Compose
-      run: docker compose -f docker-compose.yml up -d
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
-    - name: Install Dependencies
-      run: bun install
+      - name: Start services with Docker Compose
+        run: docker compose -f docker-compose.yml up -d
 
-    - name: Generate Prisma Client
-      run: bunx prisma migrate dev --schema=./src/models/prisma/schema.prisma
+      - name: Install Dependencies
+        run: bun install
 
-    - name: Run Tests
-      run: bun run test
+      - name: Generate Prisma Client
+        run: bunx prisma migrate dev --schema=./src/models/prisma/schema.prisma
+
+      - name: Run Tests
+        run: bun run test
 
   # frontend-next:
   #   runs-on: ubuntu-latest
