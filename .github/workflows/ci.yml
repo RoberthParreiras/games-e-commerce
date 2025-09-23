@@ -19,6 +19,7 @@ jobs:
     env:
       MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER }}
       REDIS_HOST: ${{ secrets.REDIS_HOST }}
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       DATABASE_URL: ${{ secrets.CI_DATABASE_URL }}
@@ -36,10 +37,6 @@ jobs:
       - name: Start services with Docker Compose
         run: docker compose -f docker-compose.yml up -d --wait
 
-      - name: Show Docker container logs on failure
-        if: failure()
-        run: docker compose logs db
-
       - name: Install Dependencies
         run: bun install
 
@@ -49,26 +46,29 @@ jobs:
       - name: Run Tests
         run: bun run test
 
-  # frontend-next:
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: ./frontend-next
-  #   strategy:
-  #     matrix:
-  #       node-version: ${{ matrix.node-version }}
-  #   steps:
-  #   - uses: actions/checkout@v5
-  #   - name: User Node.js ${{ matrix.node-version }}
-  #     uses: actions/setup-node@v5
-  #     with:
-  #       node-version: ${{ matrix.node-version }}
-  #   - name: Install Dependencies
-  #     run: npm install
-  #   - name: Build Project
-  #     run: npm run build
-  #   - name: Run tests
-  #     run: npm test
+  frontend-next:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend-next
+    strategy:
+      matrix:
+        node-version: ${{ matrix.node-version }}
+    steps:
+    - uses: actions/checkout@v5
+    - name: User Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v5
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install Dependencies
+      run: bun install
+
+    - name: Build Project
+      run: bun run build
+
+    - name: Run tests
+      run: bun test
 
   image_service:
     runs-on: ubuntu-latest
