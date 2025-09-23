@@ -37,6 +37,10 @@ jobs:
       - name: Start services with Docker Compose
         run: docker compose -f docker-compose.yml up -d --wait
 
+      - name: Show Docker container logs on failure
+        if: failure()
+        run: docker compose logs db
+
       - name: Install Dependencies
         run: bun install
 
@@ -55,20 +59,23 @@ jobs:
       matrix:
         node-version: [20.x]
     steps:
-    - uses: actions/checkout@v5
-    - name: User Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v5
-      with:
-        node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@v5
+      - name: User Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Install Dependencies
-      run: bun install
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
-    - name: Build Project
-      run: bun run build
+      - name: Install Dependencies
+        run: bun install
 
-    - name: Run tests
-      run: bun test
+      - name: Build Project
+        run: bun run build
+
+      - name: Run tests
+        run: bun test
 
   image_service:
     runs-on: ubuntu-latest
