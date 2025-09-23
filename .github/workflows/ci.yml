@@ -37,6 +37,9 @@ jobs:
       - name: Start services with Docker Compose
         run: docker compose -f docker-compose.yml up -d
 
+      - name: Wait for database to be ready
+        run: sleep 15
+
       - name: Install Dependencies
         run: bun install
 
