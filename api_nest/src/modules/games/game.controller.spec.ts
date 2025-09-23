@@ -11,6 +11,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { ImageService } from '../../integration/imageModule/image.service';
 
 const id = '2e5ef823-ae50-4f76-bb82-5d3c87fa05da';
+const mockImageUrl = 'http://example.com/image.jpg';
 const mockGame = {
   id: id,
   name: 'Game test',
@@ -24,6 +25,19 @@ const mockGame = {
 const mockGamesList = {
   gamesListReturn: [mockGame],
   totalPages: 1,
+};
+
+const mockFile: Express.Multer.File = {
+  fieldname: 'image',
+  originalname: 'test.jpg',
+  encoding: '7bit',
+  mimetype: 'image/jpeg',
+  size: 12345,
+  buffer: Buffer.from('test file content'),
+  stream: Readable.from(Buffer.from('test file content')),
+  destination: '',
+  filename: '',
+  path: '',
 };
 
 describe('GamesController', () => {
@@ -41,6 +55,7 @@ describe('GamesController', () => {
 
   const mockImageService = {
     create: jest.fn(),
+    delete: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -111,7 +126,6 @@ describe('GamesController', () => {
         path: '',
       };
 
-      const mockImageUrl = 'http://example.com/image.jpg';
       mockImageService.create.mockResolvedValue(mockImageUrl);
       mockGamesService.create.mockResolvedValue(mockGame);
 
@@ -186,8 +200,22 @@ describe('GamesController', () => {
         name: 'Updated Game test',
         description: 'Updated Description test',
         price: '15000',
+        image: 'http://example.com/image.jpg',
+        oldImage: undefined,
       };
-      await controller.updateGame(id, updateDto, mockResponse);
+      const mockRequest = {
+        headers: {
+          authorization: 'Bearer mock-token',
+        },
+      } as unknown as Request;
+
+      await controller.updateGame(
+        id,
+        updateDto,
+        mockResponse,
+        mockRequest,
+        mockFile,
+      );
 
       expect(service.patch).toHaveBeenCalledWith({
         id: id,
@@ -202,7 +230,14 @@ describe('GamesController', () => {
 
   describe('deleteGame', () => {
     it('should delete a game and return a success message', async () => {
-      await controller.deleteGame(id, mockResponse);
+      const mockRequest = {
+        headers: {
+          authorization: 'Bearer mock-token',
+        },
+      } as unknown as Request;
+      const mockBody = { image: mockImageUrl };
+
+      await controller.deleteGame(id, mockBody, mockResponse, mockRequest);
 
       expect(service.delete).toHaveBeenCalledWith({
         id: id,
