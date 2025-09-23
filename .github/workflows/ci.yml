@@ -36,7 +36,11 @@ jobs:
 
       - name: Start services with Docker Compose
         run: docker compose -f docker-compose.yml up -d --wait
-        
+
+      - name: Show Docker container logs on failure
+        if: failure()
+        run: docker compose logs db
+
       - name: Install Dependencies
         run: bun install
 
