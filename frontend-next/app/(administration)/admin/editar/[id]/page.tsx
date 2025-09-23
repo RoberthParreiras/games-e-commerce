@@ -102,6 +102,7 @@ export default function EditProduct() {
     });
 
     router.push("/admin");
+    router.refresh();
   }
 
   return (
