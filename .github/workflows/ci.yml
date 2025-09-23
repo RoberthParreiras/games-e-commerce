@@ -75,7 +75,7 @@ jobs:
         run: bun run build
 
       - name: Run tests
-        run: bun test
+        run: bun run test
 
   image_service:
     runs-on: ubuntu-latest
