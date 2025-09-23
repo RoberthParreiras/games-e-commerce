@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   # api_nest:
@@ -25,7 +25,7 @@ jobs:
   #     run: npm install
   #   - name: Run Tests
   #     run: npm test
-      
+
   # frontend-next:
   #   runs-on: ubuntu-latest
   #   defaults:
@@ -52,7 +52,7 @@ jobs:
     defaults:
       run:
         working-directory: ./image_service
-          
+
     strategy:
       matrix:
         python-version: ["3.12"]
@@ -66,22 +66,35 @@ jobs:
       MONGO_PORT: ${{ secrets.MONGO_PORT }}
       MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_INITDB_ROOT_USERNAME }}
       MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}
-      
+
     steps:
-    - uses: actions/checkout@v5
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Start services with Docker Compose
-      run: docker compose -f docker-compose.yml up -d
-    - name: Install uv and dependencies
-      run: |
-        pip install uv
-        uv venv
-        uv sync
-    - name: Run Tests
-      run: |
-        source .venv/bin/activate
-        pytest
-  
+      - uses: actions/checkout@v5
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Start services with Docker Compose
+        run: docker compose -f docker-compose.yml up -d
+
+      - name: Cache uv dependencies
+        id: cache-uv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install uv and dependencies
+        run: |
+          pip install uv
+          uv venv
+          if ["${{ steps.cache-uv.outputs.cache-hit }}" != "true"]; then
+            uv sync
+          fi
+
+      - name: Run Tests
+        run: |
+          source .venv/bin/activate
+          pytest
