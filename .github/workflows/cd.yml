@@ -15,7 +15,13 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # Set the project directory as a safe directory for Git
+            git config --global --add safe.directory /var/www/games-e-commerce
+
             cd /var/www/games-e-commerce
+
+            # This allows the workflow to write files like .env
+            sudo chown -R ubuntu:ubuntu .
 
             # Pull the latest changes from the main branch
             git pull origin main
