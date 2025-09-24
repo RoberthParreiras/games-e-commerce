@@ -51,11 +51,11 @@ jobs:
       # - name: Run Linting
       #   run: bun run lint
       
-      - name: Build Project
-        run: bun run build
-
       - name: Generate Prisma Client
         run: bunx prisma migrate dev --schema=./src/models/prisma/schema.prisma
+      
+      - name: Build Project
+        run: bun run build
 
       - name: Run Tests
         run: bun run test
