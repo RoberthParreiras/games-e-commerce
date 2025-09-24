@@ -92,8 +92,8 @@ jobs:
       MINIO_ROOT_PASSWORD: ${{ secrets.MINIO_ROOT_PASSWORD }}
       MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
       # MINIO_SECURE: ${{ secrets.MINIO_SECURE }}
-      # MONGO_HOST: ${{ secrets.MONGO_HOST }}
-      # MONGO_PORT: ${{ secrets.MONGO_PORT }}
+      MONGO_HOST: ${{ secrets.MONGO_HOST }}
+      MONGO_PORT: ${{ secrets.MONGO_PORT }}
       MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_INITDB_ROOT_USERNAME }}
       MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}
 
