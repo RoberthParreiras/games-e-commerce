@@ -42,7 +42,7 @@ describe("Home Page", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /discover, buy, and play thousands of games/i,
+        name: /discover and play thousands of games/i,
       }),
     ).toBeInTheDocument();
     expect(
