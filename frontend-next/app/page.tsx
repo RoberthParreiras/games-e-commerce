@@ -17,7 +17,7 @@ export default async function Home() {
           />
         </div>
         <h2 className="my-20 text-center md:text-4xl lg:text-5xl">
-          Discover, buy, and play thousands of games
+          Discover and play thousands of games
         </h2>
         <section className="grid grid-cols-1 gap-8 bg-[#393E46] p-5 text-[#DFD0B8] lg:grid-cols-3">
           {games.games.map((game) => (
