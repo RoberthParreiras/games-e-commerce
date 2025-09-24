@@ -1,0 +1,33 @@
+name: CD Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /var/www/games-e-commerce
+
+            # Pull the latest changes from the main branch
+            git pull origin main
+
+            cd image_service
+            echo "${{ secrets.ENV_FILE_PROD_IMAGE_SERVICE }}" > .env
+            ./start-prod.sh
+
+            cd ../api_nest
+            echo "${{ secrets.ENV_FILE_PROD_API_NEST }}" > .env
+            ./start-prod.sh
+
+            cd ../frontend-next
+            echo "${{ secrets.ENV_FILE_PROD_FRONTEND_NEXT }}" > .env.production
+            ./start-prod.sh
