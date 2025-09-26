@@ -17,21 +17,23 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            PARENT_DIR="/var/www"
             PROJECT_DIR="/var/www/games-e-commerce"
+
+            sudo mkdir -p $PARENT_DIR
+            sudo chown -R $USER:$USER $PARENT_DIR
 
             # Check if the project directory exists
             if [ -d "$PROJECT_DIR" ]; then
               echo "Project directory exists. Pulling latest changes."
               cd $PROJECT_DIR
               git config --global --add safe.directory $PROJECT_DIR
-              sudo chown -R ubuntu:ubuntu .
               git pull origin main
             else
               echo "Project directory does not exist. Cloning repository."
               # Make sure to replace the URL with your repository's URL
               git clone https://github.com/RoberthParreiras/games-e-commerce.git $PROJECT_DIR
               cd $PROJECT_DIR
-              sudo chown -R ubuntu:ubuntu .
             fi
 
             cd image_service
