@@ -1,5 +1,3 @@
-import { signOut } from "next-auth/react";
-
 interface FetchOptions extends Omit<RequestInit, "body"> {
   accessToken?: string;
   body?: Record<string, unknown> | FormData | string;
@@ -36,11 +34,8 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
     ...options,
     headers,
     body,
+    credentials: "include",
   });
-
-  if (response.status === 401 && !options.isAuthRoute) {
-    signOut({ callbackUrl: "/signin" });
-  }
 
   if (!response.ok) {
     if (options.isAuthRoute) {
@@ -50,7 +45,6 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
     const errorData = await response.json().catch(() => ({
       message: `Request failed with status ${response.status}`,
     }));
-    console.log(response.status);
     throw new Error(errorData.message || "An unknown API error occurred");
   }
   // Handle responses with no content

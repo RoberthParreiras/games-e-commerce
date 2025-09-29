@@ -18,9 +18,9 @@ export function GameCardHome({ game }: { game: GameInfo }) {
           <p className="text-2xl">{game.description}</p>
           <span className="text-3xl">R$ {game.price}</span>
           <div className="rounded-2xl bg-[#DFD0B8] py-4 text-[#393E46] hover:bg-[#948979]">
-            <Link href={game.id} className="block w-full py-2 text-3xl md:text-5xl">
+            <span className="block w-full py-2 text-3xl md:text-5xl">
               Buy Now
-            </Link>
+            </span>
           </div>
         </div>
       </article>

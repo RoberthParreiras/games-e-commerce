@@ -28,8 +28,9 @@ import {
   UpdateGameDto,
 } from './game.schema';
 import { convertBytesToUuid } from '../../common/utils/uuid.util';
-import { AuthGuard } from '../auth/auth.guard';
 import { ImageService } from '../../integration/imageModule/image.service';
+import { ClerkAuthGuard } from '../auth/clerk.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('/games')
 export class GamesController {
@@ -39,7 +40,8 @@ export class GamesController {
   ) {}
   private readonly logger = new Logger(GamesController.name);
 
-  @UseGuards(AuthGuard)
+  @UseGuards(ClerkAuthGuard)
+  @Roles('admin')
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async createGame(
@@ -142,7 +144,8 @@ export class GamesController {
     });
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(ClerkAuthGuard)
+  @Roles('admin')
   @Patch(':id')
   @UseInterceptors(FileInterceptor('file'))
   async updateGame(
@@ -195,7 +198,8 @@ export class GamesController {
     });
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(ClerkAuthGuard)
+  @Roles('admin')
   @Delete(':id')
   async deleteGame(
     @Param('id') id: string,

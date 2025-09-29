@@ -1,14 +1,12 @@
 "use client";
 
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 
 export function Header() {
-  const { data: session } = useSession();
-
   return (
-    <header className="flex bg-[#393E46] justify-between px-4 text-[#DFD0B8]">
+    <header className="flex justify-between bg-[#393E46] px-4 text-[#DFD0B8]">
       <Link href="/">
         <Image
           src="/logo.png"
@@ -18,32 +16,37 @@ export function Header() {
           priority
         />
       </Link>
-      <nav className="flex items-center justify-around w-1/3 md:w-1/4">
-        {session?.user ? (
-          <div className="flex justify-around gap-4 w-full">
-            <Link href="/" className="text-xs sm:text-lg hover:text-sky-500">
+      <nav className="flex w-1/3 items-center justify-around md:w-1/4">
+        <SignedIn>
+          <div className="flex w-full justify-around gap-3">
+            <Link
+              href="/"
+              className="my-auto text-xs hover:text-sky-500 sm:text-sm"
+            >
               Home
             </Link>
             <Link
               href="/admin"
-              className="text-xs sm:text-sm text-wrap my-auto hover:text-sky-500"
+              className="my-auto text-xs text-wrap hover:text-sky-500 sm:text-sm"
             >
-              Welcome, {session.user.name}
+              Admin
             </Link>
+            <UserButton />
           </div>
-        ) : (
-          <div className="flex justify-around w-full">
-            <Link href="/" className="text-xs sm:text-lg hover:text-sky-500">
+        </SignedIn>
+        <SignedOut>
+          <div className="flex w-full justify-around">
+            <Link href="/" className="text-xs hover:text-sky-500 sm:text-lg">
               Home
             </Link>
             <Link
-              href="/signin"
-              className="text-xs sm:text-lg hover:text-sky-500"
+              href="/sign-in"
+              className="text-xs hover:text-sky-500 sm:text-lg"
             >
               Login
             </Link>
           </div>
-        )}
+        </SignedOut>
       </nav>
     </header>
   );

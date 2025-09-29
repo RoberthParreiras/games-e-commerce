@@ -14,7 +14,7 @@ export default function Product() {
 
   useEffect(() => {
     async function fetchProduct() {
-      const data: SingleGameResponse = await apiFetch(`/games/${id}`);
+      const data: SingleGameResponse = await apiFetch(`/api/games/${id}`);
       setGame(data.game);
     }
 

@@ -8,7 +8,7 @@ export default async function Home() {
   return (
     <div>
       <main className="mx-auto w-full max-w-7xl px-4">
-        <div className="relative h-[390px] w-full md:h-[500px] lg:h-[960px]">
+        <div className="relative h-[390px] w-full lg:h-[800px]">
           <Image
             src="/banner.jpg"
             alt="banner with video game characters"
@@ -16,7 +16,7 @@ export default async function Home() {
             style={{ objectFit: "contain" }}
           />
         </div>
-        <h2 className="my-20 text-center md:text-4xl lg:text-5xl">
+        <h2 className="my-1 text-center text-3xl sm:mb-20 md:text-4xl lg:mb-10 lg:text-5xl">
           Discover and play thousands of games
         </h2>
         <section className="grid grid-cols-1 gap-8 bg-[#393E46] p-5 text-[#DFD0B8] lg:grid-cols-3">

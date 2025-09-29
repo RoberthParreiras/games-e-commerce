@@ -6,16 +6,18 @@ import {
   act,
 } from "@testing-library/react";
 import z from "zod";
-import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { Controller } from "react-hook-form";
 
 import EditProduct from "./page";
 import { apiFetch } from "@/app/api/fetch";
 import { ComponentProps, ReactElement } from "react";
+import { useAuth } from "@clerk/nextjs";
 
 // Mock external modules and components
-jest.mock("next-auth/react");
+jest.mock("@clerk/nextjs", () => ({
+  useAuth: jest.fn(),
+}));
 jest.mock("next/navigation");
 jest.mock("@/app/api/fetch");
 
@@ -89,7 +91,7 @@ jest.mock("@/app/components/base/button", () => ({
   }) => <button {...props}>{children}</button>,
 }));
 
-const mockedUseSession = useSession as jest.Mock;
+const mockedAuthSession = useAuth as jest.Mock;
 const mockedUseRouter = useRouter as jest.Mock;
 const mockedUseParams = useParams as jest.Mock;
 const mockedApiFetch = apiFetch as jest.Mock;
@@ -112,23 +114,11 @@ describe("EditProduct Page", () => {
     jest.clearAllMocks();
     mockedUseRouter.mockReturnValue({ push: mockPush, refresh: mockRefresh });
     mockedUseParams.mockReturnValue({ id: mockGameId });
-    mockedUseSession.mockReturnValue({
-      data: { accessToken: "fake-token" },
-      status: "authenticated",
+    mockedAuthSession.mockReturnValue({
+      isSignedIn: true,
+      getToken: () => Promise.resolve("fake-token"),
     });
     mockedApiFetch.mockResolvedValue(mockGameData);
-  });
-
-  it("should redirect unauthenticated users to signin", async () => {
-    mockedUseSession.mockReturnValue({ data: null, status: "unauthenticated" });
-    await act(async () => {
-      render(<EditProduct />);
-    });
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/signin");
-      expect(mockRefresh).toHaveBeenCalled();
-    });
   });
 
   it("fetches product data and populates the form on mount", async () => {
@@ -160,7 +150,7 @@ describe("EditProduct Page", () => {
 
     await waitFor(() => {
       expect(mockedApiFetch).toHaveBeenCalledWith(
-        `/games/${mockGameId}`,
+        `/api/games/${mockGameId}`,
         expect.objectContaining({
           method: "PATCH",
           accessToken: "fake-token",
@@ -188,7 +178,7 @@ describe("EditProduct Page", () => {
 
     await waitFor(() => {
       expect(mockedApiFetch).toHaveBeenCalledWith(
-        `/games/${mockGameId}`,
+        `/api/games/${mockGameId}`,
         expect.objectContaining({
           method: "DELETE",
           accessToken: "fake-token",

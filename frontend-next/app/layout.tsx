@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-import AuthProvider from "./components/authProvider";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Header } from "./components/header";
 import { Footer } from "./components/footer";
 
@@ -24,11 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${montserrat.variable} antialiased`}>
-        <AuthProvider>
+        <ClerkProvider>
           <Header />
           {children}
           <Footer />
-        </AuthProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

@@ -3,7 +3,6 @@
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 
 import CropImageModalEdit from "@/app/components/imageModalEdit";
@@ -14,6 +13,7 @@ import { CustomAlertDialog } from "@/app/components/base/alert";
 import { CustomButton } from "@/app/components/base/button";
 import { apiFetch } from "@/app/api/fetch";
 import { SingleGameResponse } from "@/app/types/game";
+import { useAuth } from "@clerk/nextjs";
 
 type FormInput = z.input<typeof formSchemaEdit>;
 type FormOutput = z.output<typeof formSchemaEdit>;
@@ -22,7 +22,7 @@ export default function EditProduct() {
   const { id } = useParams();
 
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { getToken } = useAuth();
 
   const [product, setProduct] = useState<{
     image: string | undefined;
@@ -40,13 +40,8 @@ export default function EditProduct() {
   });
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/signin");
-      router.refresh();
-    }
-
     async function fetchProduct() {
-      const data: SingleGameResponse = await apiFetch(`/games/${id}`);
+      const data: SingleGameResponse = await apiFetch(`/api/games/${id}`);
 
       const gameData = {
         image: data.game.image || undefined,
@@ -65,10 +60,16 @@ export default function EditProduct() {
     if (id) {
       fetchProduct();
     }
-  }, [id, status, form, router]);
+  }, [id, form, router]);
 
   const onSubmit: SubmitHandler<FormOutput> = async (data) => {
+    const token = await getToken();
     const formData = new FormData();
+
+    if (!token) {
+      router.push("/sign-in");
+      return;
+    }
 
     if (typeof data.image !== "string" && product?.oldImage) {
       formData.append("file", data.image, "image.jpg");
@@ -81,24 +82,31 @@ export default function EditProduct() {
     formData.append("description", data.description);
     formData.append("price", String(data.price));
 
-    await apiFetch(`/games/${id}`, {
+    await apiFetch(`/api/games/${id}`, {
       method: "PATCH",
       body: formData,
-      accessToken: session?.accessToken,
+      accessToken: token,
     });
 
     router.push("/admin");
+    router.refresh();
   };
 
   async function onDelete() {
+    const token = await getToken();
+    if (!token) {
+      router.push("/sign-in");
+      return;
+    }
+
     if (!product?.oldImage) return;
     const formData = new FormData();
     formData.append("image", product?.oldImage);
 
-    apiFetch(`/games/${id}`, {
+    apiFetch(`/api/games/${id}`, {
       method: "DELETE",
       body: formData,
-      accessToken: session?.accessToken,
+      accessToken: token,
     });
 
     router.push("/admin");
@@ -119,7 +127,11 @@ export default function EditProduct() {
         )}
         <GameFormEdit />
         <div className="mb-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <CustomButton visual="primary" onClick={() => router.push("/admin")}>
+          <CustomButton
+            visual="primary"
+            type="button"
+            onClick={() => router.push("/admin")}
+          >
             Cancel
           </CustomButton>
           <CustomButton visual="primary" type="submit">

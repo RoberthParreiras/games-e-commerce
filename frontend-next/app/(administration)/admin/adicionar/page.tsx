@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import CropImageModal from "@/app/components/imageModal";
@@ -12,19 +11,14 @@ import { GameForm } from "@/app/components/productForm";
 import { formSchema } from "@/app/schemas/gameFormSchema";
 import { CustomButton } from "@/app/components/base/button";
 import { apiFetch } from "@/app/api/fetch";
+import { useAuth } from "@clerk/nextjs";
 
 type FormInput = z.input<typeof formSchema>;
 type FormOutput = z.output<typeof formSchema>;
 
 export default function CreateProduct() {
   const router = useRouter();
-  const { data: session, status } = useSession();
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/signin");
-    }
-  }, [status, router]);
+  const { getToken } = useAuth();
 
   const form = useForm<FormInput>({
     resolver: zodResolver(formSchema),
@@ -37,25 +31,33 @@ export default function CreateProduct() {
   });
 
   const onSubmit: SubmitHandler<FormOutput> = async (data) => {
-    if (!session?.accessToken) {
-      console.error("No access token found");
-      return;
+    try {
+      const token = await getToken();
+
+      if (!token) {
+        router.push("/sign-in");
+        return;
+      }
+
+      const formData = new FormData();
+
+      formData.append("file", data.image, "image.jpg");
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+      formData.append("price", String(data.price));
+
+      await apiFetch("/games", {
+        method: "POST",
+        body: formData,
+        accessToken: token,
+      });
+
+      router.push("/admin");
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to create product:", error);
+      // Handle submission errors (e.g., show an alert to the user)
     }
-
-    const formData = new FormData();
-
-    formData.append("file", data.image, "image.jpg");
-    formData.append("name", data.name);
-    formData.append("description", data.description);
-    formData.append("price", String(data.price));
-
-    await apiFetch("/games", {
-      method: "POST",
-      body: formData,
-      accessToken: session.accessToken,
-    });
-
-    router.push("/admin");
   };
 
   return (
@@ -72,7 +74,11 @@ export default function CreateProduct() {
         )}
         <GameForm />
         <div className="mb-4 flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <CustomButton visual="primary" onClick={() => router.push("/admin")}>
+          <CustomButton
+            visual="primary"
+            type="button"
+            onClick={() => router.push("/admin")}
+          >
             Cancel
           </CustomButton>
           <CustomButton visual="primary" type="submit">
