@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
@@ -46,7 +45,7 @@ export default function CreateProduct() {
       formData.append("description", data.description);
       formData.append("price", String(data.price));
 
-      await apiFetch("/games", {
+      await apiFetch("/api/games", {
         method: "POST",
         body: formData,
         accessToken: token,
