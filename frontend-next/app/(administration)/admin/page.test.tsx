@@ -82,12 +82,14 @@ describe("Dashboard Page", () => {
       maxPrice: undefined,
     });
 
-    expect(screen.getByTestId("game-filter")).toBeInTheDocument();
-    expect(screen.getAllByTestId("game-card-admin")).toHaveLength(2);
-    expect(screen.getByText("Game One")).toBeInTheDocument();
-    expect(screen.getByTestId("game-pagination")).toHaveTextContent(
-      "Total Pages: 10",
-    );
+    await waitFor(() => {
+      expect(screen.getByTestId("game-filter")).toBeInTheDocument();
+      expect(screen.getAllByTestId("game-card-admin")).toHaveLength(2);
+      expect(screen.getByText("Game One")).toBeInTheDocument();
+      expect(screen.getByTestId("game-pagination")).toHaveTextContent(
+        "Total Pages: 10",
+      );
+    });
   });
 
   it("should fetch games using provided search parameters", async () => {

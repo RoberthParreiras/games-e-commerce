@@ -145,7 +145,7 @@ describe("CreateProduct Page", () => {
 
     await waitFor(() => {
       expect(mockedApiFetch).toHaveBeenCalledWith(
-        "/games",
+        "/api/games",
         expect.objectContaining({
           method: "POST",
           accessToken: "fake-token",
