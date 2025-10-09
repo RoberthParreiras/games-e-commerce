@@ -7,7 +7,19 @@ jest.mock("@/app/lib/game-data", () => ({
   getGames: jest.fn(),
 }));
 
-// Mock the child component to simplify the test
+jest.mock("embla-carousel-react", () => ({
+  __esModule: true,
+  default: jest.fn().mockReturnValue([
+    jest.fn(),
+    {
+      canScrollPrev: jest.fn().mockReturnValue(false),
+      canScrollNext: jest.fn().mockReturnValue(false),
+      on: jest.fn(),
+      off: jest.fn(),
+    },
+  ]),
+}));
+
 jest.mock("@/app/components/gameCardHome", () => ({
   GameCardHome: jest.fn(({ game }) => (
     <div data-testid="game-card">{game.name}</div>

@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { CustomAlertDialog } from "@/app/components/base/alert";
 import { CustomButton } from "@/app/components/base/button";
 import { apiFetch } from "@/app/api/fetch";
-import { SingleGameResponse } from "@/app/types/game";
+import { GameInfo, SingleGameResponse } from "@/app/types/game";
 
 type FormInput = z.input<typeof formSchemaEdit>;
 type FormOutput = z.output<typeof formSchemaEdit>;
@@ -24,10 +24,7 @@ export default function EditProduct() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  const [product, setProduct] = useState<{
-    image: string | undefined;
-    oldImage: string | undefined;
-  } | null>(null);
+  const [product, setProduct] = useState<GameInfo | undefined>(undefined);
 
   const form = useForm<FormInput>({
     resolver: zodResolver(formSchemaEdit),
@@ -35,7 +32,7 @@ export default function EditProduct() {
       name: "",
       description: "",
       price: "",
-      image: undefined,
+      images: undefined,
     },
   });
 
@@ -46,42 +43,48 @@ export default function EditProduct() {
     }
 
     async function fetchProduct() {
-      const data: SingleGameResponse = await apiFetch(`/games/${id}`);
+      const data: SingleGameResponse = await apiFetch(`/api/games/${id}`);
 
-      const gameData = {
-        image: data.game.image || undefined,
-        oldImage: data.game.image || undefined,
-      };
-      setProduct(gameData);
+      setProduct(data.game);
 
       form.reset({
         name: data.game.name || "",
         description: data.game.description || "",
         price: data.game.price.toString() || "",
-        image: data.game.image || undefined,
+        images: data.game.images.map((image) => image.url),
       });
     }
 
-    if (id) {
+    if (id && status === "authenticated") {
       fetchProduct();
     }
   }, [id, status, form, router]);
 
   const onSubmit: SubmitHandler<FormOutput> = async (data) => {
-    const formData = new FormData();
+    if (!session?.accessToken) {
+      console.error("No access token found");
+      return;
+    }
 
-    if (typeof data.image !== "string" && product?.oldImage) {
-      formData.append("file", data.image, "image.jpg");
-      formData.append("oldImage", product.oldImage); // send the old image url for deletion
-    } else {
-      formData.append("image", data.image);
+    const formData = new FormData();
+    const imagesToKeep: string[] = [];
+
+    if (data.images && Array.isArray(data.images)) {
+      for (const image of data.images) {
+        if (image instanceof File) {
+          formData.append("file", image, "image.jpg");
+        } else if (typeof image === "string") {
+          imagesToKeep.push(image);
+        }
+      }
     }
 
     formData.append("name", data.name);
     formData.append("description", data.description);
     formData.append("price", String(data.price));
+    formData.append("imagesToKeep", JSON.stringify(imagesToKeep));
 
-    await apiFetch(`/games/${id}`, {
+    await apiFetch(`/api/games/${id}`, {
       method: "PATCH",
       body: formData,
       accessToken: session?.accessToken,
@@ -91,13 +94,13 @@ export default function EditProduct() {
   };
 
   async function onDelete() {
-    if (!product?.oldImage) return;
-    const formData = new FormData();
-    formData.append("image", product?.oldImage);
+    if (!session?.accessToken) {
+      console.error("No access token found");
+      return;
+    }
 
-    apiFetch(`/games/${id}`, {
+    apiFetch(`/api/games/${id}`, {
       method: "DELETE",
-      body: formData,
       accessToken: session?.accessToken,
     });
 
@@ -111,10 +114,19 @@ export default function EditProduct() {
         className="mx-auto mt-16 w-full max-w-5xl"
         onSubmit={form.handleSubmit(onSubmit as SubmitHandler<FormInput>)}
       >
-        <CropImageModalEdit image={product?.image ?? ""} />
-        {form.formState.errors.image && (
+        <CropImageModalEdit
+          key={product?.images[0].id ?? 0}
+          image={product?.images[0]?.url ?? ""}
+          index={0}
+        />
+        <CropImageModalEdit
+          key={product?.images[1].id ?? 1}
+          image={product?.images[1]?.url ?? ""}
+          index={1}
+        />
+        {form.formState.errors.images && (
           <p className="text-destructive text-sm font-medium">
-            {form.formState.errors.image.message}
+            {form.formState.errors.images.message}
           </p>
         )}
         <GameFormEdit />

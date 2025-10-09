@@ -20,7 +20,7 @@ export async function getGames({
   if (maxPrice !== undefined) params.append("maxPrice", maxPrice.toString());
 
   const queryString = params.toString();
-  const queryParams = `/games${queryString ? `?${queryString}` : ""}`;
+  const queryParams = `/api/games${queryString ? `?${queryString}` : ""}`;
 
   const data = await apiFetch(queryParams, {
     method: "GET",

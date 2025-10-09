@@ -24,10 +24,10 @@ export class GamesService extends BaseService {
   async create(params: {
     name: string;
     description: string;
-    image: string;
+    images: string[];
     price: string;
   }) {
-    const { name, description, image, price } = params;
+    const { name, description, price, images } = params;
 
     const uuid = uuidv4();
 
@@ -36,10 +36,21 @@ export class GamesService extends BaseService {
         id: convertUuidToBytes(uuid),
         name,
         description,
-        image,
         price: parseInt(price),
       },
     });
+
+    await Promise.all(
+      images.map((image) =>
+        this.prisma.gameImage.create({
+          data: {
+            id: convertUuidToBytes(uuidv4()),
+            gameId: convertUuidToBytes(uuid),
+            url: image,
+          },
+        }),
+      ),
+    );
 
     return gameCreated;
   }
@@ -50,6 +61,9 @@ export class GamesService extends BaseService {
     const game = await this.prisma.games.findUnique({
       where: {
         id: convertUuidToBytes(id),
+      },
+      include: {
+        images: true,
       },
     });
 
@@ -96,6 +110,9 @@ export class GamesService extends BaseService {
     const [gamesList, totalGames] = await this.prisma.$transaction([
       this.prisma.games.findMany({
         where,
+        include: {
+          images: true,
+        },
         skip: skipNum,
         take: Number(limitPerPage),
       }),
@@ -118,12 +135,15 @@ export class GamesService extends BaseService {
     name?: string;
     description?: string;
     price?: string;
-    image?: string;
+    images?: string[];
   }) {
-    const { id, ...updates } = params;
+    const { id, images, ...updates } = params;
 
     const currentGame = await this.prisma.games.findUnique({
       where: { id: convertUuidToBytes(id) },
+      include: {
+        images: true,
+      },
     });
 
     if (!currentGame) throw new NotFoundException('Game not found');
@@ -133,12 +153,12 @@ export class GamesService extends BaseService {
         name: currentGame?.name,
         description: currentGame?.description,
         price: currentGame?.price.toString(),
-        image: currentGame?.image,
       },
       updates,
     );
 
-    if (Object.keys(changedFields).length > 0) {
+    let hasChanges = Object.keys(changedFields).length > 0;
+    if (hasChanges) {
       const updateData = this.prepareUpdateData(changedFields);
 
       await this.prisma.games.update({
@@ -148,14 +168,53 @@ export class GamesService extends BaseService {
         data: updateData,
       });
     }
+
+    if (images && Array.isArray(images)) {
+      const oldImageUrls = currentGame.images.map((image) => image.url);
+      const newImageUrls = images;
+
+      const areImagesDifferent =
+        oldImageUrls.length !== newImageUrls.length ||
+        !oldImageUrls.every((url) => newImageUrls.includes(url));
+
+      if (areImagesDifferent) {
+        await this.prisma.gameImage.deleteMany({
+          where: { gameId: convertUuidToBytes(id) },
+        });
+
+        await Promise.all(
+          images.map((image) =>
+            this.prisma.gameImage.create({
+              data: {
+                id: convertUuidToBytes(uuidv4()),
+                gameId: convertUuidToBytes(id),
+                url: image,
+              },
+            }),
+          ),
+        );
+      }
+    }
   }
 
   async delete(params: { id: string }) {
     const { id } = params;
-    await this.prisma.games.delete({
-      where: {
-        id: convertUuidToBytes(id),
-      },
+
+    const game = await this.prisma.games.findUnique({
+      where: { id: convertUuidToBytes(id) },
     });
+
+    if (!game) {
+      throw new NotFoundException('Game not found');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.gameImage.deleteMany({
+        where: { gameId: convertUuidToBytes(id) },
+      }),
+      this.prisma.games.delete({
+        where: { id: convertUuidToBytes(id) },
+      }),
+    ]);
   }
 }

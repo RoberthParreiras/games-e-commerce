@@ -2,6 +2,13 @@
 
 import { apiFetch } from "@/app/api/fetch";
 import { CustomButton } from "@/app/components/base/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/app/components/ui/carousel";
 import { GameInfo, SingleGameResponse } from "@/app/types/game";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,7 +21,7 @@ export default function Product() {
 
   useEffect(() => {
     async function fetchProduct() {
-      const data: SingleGameResponse = await apiFetch(`/games/${id}`);
+      const data: SingleGameResponse = await apiFetch(`/api/games/${id}`);
       setGame(data.game);
     }
 
@@ -33,15 +40,27 @@ export default function Product() {
           Back to home
         </CustomButton>
       </Link>
-      <div className="mt-10 grid w-full max-w-7xl px-4 sm:grid-cols-2">
+      <div className="mx-auto my-10 w-full max-w-3xl px-4">
         {game ? (
-          <>
-            <Image
-              src={game.image}
-              alt={`${game.name} image`}
-              width={570}
-              height={570}
-            />
+          <div>
+            <Carousel>
+              <CarouselContent>
+                {game.images.map((image) => (
+                  <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                    <Image
+                      id={image.url}
+                      src={image.url}
+                      alt={`${game.name} image`}
+                      width={570}
+                      height={570}
+                      className="mb-10"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
             <div className="flex w-full flex-col justify-center gap-10 text-center">
               <h3 className="text-3xl md:text-4xl">{game.name}</h3>
               <p className="text-2xl">{game.description}</p>
@@ -55,7 +74,7 @@ export default function Product() {
                 </Link>
               </div>
             </div>
-          </>
+          </div>
         ) : (
           <div className="col-span-2 py-20 text-center text-2xl">
             Loading...

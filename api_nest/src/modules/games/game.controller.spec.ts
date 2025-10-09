@@ -16,7 +16,7 @@ const mockGame = {
   id: id,
   name: 'Game test',
   description: 'A description test',
-  image: 'A image test',
+  images: [{ url: mockImageUrl }],
   price: '10000',
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -39,6 +39,7 @@ const mockFile: Express.Multer.File = {
   filename: '',
   path: '',
 };
+const mockFiles: Express.Multer.File[] = [mockFile];
 
 describe('GamesController', () => {
   let controller: GamesController;
@@ -113,19 +114,6 @@ describe('GamesController', () => {
         },
       } as unknown as Request;
 
-      const mockFile: Express.Multer.File = {
-        fieldname: 'image',
-        originalname: 'test.jpg',
-        encoding: '7bit',
-        mimetype: 'image/jpeg',
-        size: 12345,
-        buffer: Buffer.from('test file content'),
-        stream: Readable.from(Buffer.from('test file content')),
-        destination: '',
-        filename: '',
-        path: '',
-      };
-
       mockImageService.create.mockResolvedValue(mockImageUrl);
       mockGamesService.create.mockResolvedValue(mockGame);
 
@@ -133,7 +121,7 @@ describe('GamesController', () => {
         createGameDto,
         mockRequest,
         mockResponse,
-        mockFile,
+        mockFiles,
       );
 
       expect(mockImageService.create).toHaveBeenCalledWith({
@@ -143,7 +131,7 @@ describe('GamesController', () => {
 
       expect(service.create).toHaveBeenCalledWith({
         ...createGameDto,
-        image: mockImageUrl,
+        images: [mockImageUrl],
       });
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.CREATED);
     });
@@ -200,8 +188,7 @@ describe('GamesController', () => {
         name: 'Updated Game test',
         description: 'Updated Description test',
         price: '15000',
-        image: 'http://example.com/image.jpg',
-        oldImage: undefined,
+        imagesToKeep: '[]',
       };
       const mockRequest = {
         headers: {
@@ -209,17 +196,37 @@ describe('GamesController', () => {
         },
       } as unknown as Request;
 
+      mockGamesService.get.mockResolvedValue({
+        ...mockGame,
+        images: [{ url: 'http://example.com/old_image.jpg' }],
+      });
+
+      mockImageService.create.mockResolvedValue(mockImageUrl);
+
       await controller.updateGame(
         id,
         updateDto,
         mockResponse,
         mockRequest,
-        mockFile,
+        mockFiles,
       );
+
+      expect(mockImageService.delete).toHaveBeenCalledWith({
+        image_url: 'http://example.com/old_image.jpg',
+        authorization: mockRequest.headers.authorization,
+      });
+
+      expect(mockImageService.create).toHaveBeenCalledWith({
+        file: mockFile,
+        authorization: mockRequest.headers.authorization,
+      });
 
       expect(service.patch).toHaveBeenCalledWith({
         id: id,
-        ...updateDto,
+        name: updateDto.name,
+        description: updateDto.description,
+        price: updateDto.price,
+        images: [mockImageUrl],
       });
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.OK);
       expect(mockResponse.json).toHaveBeenCalledWith({
@@ -235,7 +242,7 @@ describe('GamesController', () => {
           authorization: 'Bearer mock-token',
         },
       } as unknown as Request;
-      const mockBody = { image: mockImageUrl };
+      const mockBody = {};
 
       await controller.deleteGame(id, mockBody, mockResponse, mockRequest);
 

@@ -3,10 +3,15 @@ export type GameInfo = {
   name: string;
   description: string;
   price: string;
-  image: string;
-  // link: string;
+  images: image[];
   createdAt: string;
   updatedAt: string;
+};
+
+type image = {
+  id: string;
+  url: string;
+  gameId: string;
 };
 
 export type GameResponse = {

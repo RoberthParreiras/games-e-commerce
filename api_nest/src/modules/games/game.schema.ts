@@ -6,7 +6,6 @@ const GameSchema = z.object({
   id: z.instanceof(Buffer),
   name: z.string(),
   description: z.string(),
-  image: z.string(),
   price: z
     .preprocess(
       (val) => (typeof val === 'string' ? parseFloat(val) : val),
@@ -19,7 +18,6 @@ const GameSchema = z.object({
 
 const CreateGame = GameSchema.omit({
   id: true,
-  image: true,
   createdAt: true,
   updatedAt: true,
 });
@@ -27,11 +25,9 @@ const CreateGame = GameSchema.omit({
 const UpdateGame = GameSchema.omit({
   id: true,
   createdAt: true,
-  image: true,
   updatedAt: true,
 }).extend({
-  image: z.string().optional(),
-  oldImage: z.string().optional(),
+  imagesToKeep: z.string().optional(),
 });
 
 const DeleteGame = GameSchema.omit({

@@ -2,6 +2,13 @@ import Image from "next/image";
 
 import { GameCardHome } from "@/app/components/gameCardHome";
 import { getGames } from "@/app/lib/game-data";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/app/components/ui/carousel";
 
 export default async function Home() {
   const games = await getGames({});
@@ -19,10 +26,18 @@ export default async function Home() {
         <h2 className="my-20 text-center md:text-4xl lg:text-5xl">
           Discover and play thousands of games
         </h2>
-        <section className="grid grid-cols-1 gap-8 bg-[#393E46] p-5 text-[#DFD0B8] lg:grid-cols-3">
-          {games.games.map((game) => (
-            <GameCardHome key={game.id} game={game} />
-          ))}
+        <section className="flex flex-col bg-[#393E46] p-5 text-[#DFD0B8]">
+          <Carousel className="mx-10">
+            <CarouselContent className="ml-5">
+              {games.games.map((game) => (
+                <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                  <GameCardHome key={game.id} game={game} />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </section>
         <section id="about">
           <h2 className="my-20 text-center text-5xl">About us</h2>

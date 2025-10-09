@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
 
         const { email, password } = credentials;
 
-        const res = await apiFetch("/auth/login", {
+        const res = await apiFetch("/api/auth/login", {
           method: "POST",
           body: { email, password },
           headers: { "Content-Type": "application/json" },

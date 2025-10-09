@@ -14,12 +14,16 @@ import { Input } from "@/app/components/ui/input";
 import { CustomButton } from "./base/button";
 
 type Crop = { x: number; y: number };
+type CropImageModalProps = {
+  image: string;
+  index: number;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PixelArea = any; // keep flexible for react-easy-crop typings; refine if needed
 
-function CropImageModalEdit({ image }: { image: string }) {
-  const { setValue } = useFormContext();
+function CropImageModalEdit({ image, index }: CropImageModalProps) {
+  const { setValue, getValues } = useFormContext();
 
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [hasImageSrc, setHasImageSrc] = useState(false);
@@ -83,15 +87,26 @@ function CropImageModalEdit({ image }: { image: string }) {
       // Convert Data URL to Blob
       const response = await fetch(cropped);
       const blob = await response.blob();
+      const file = new File([blob], `image-${index}.jpg`, { type: blob.type });
 
-      // Set the Blob in the form
-      setValue("image", blob, { shouldValidate: true });
+      const currentImages = getValues("images") || [];
+      const newImages = [...currentImages];
+      newImages[index] = file;
+      setValue("images", newImages, { shouldValidate: true });
 
       handleClose();
     } catch (e) {
       console.error(e);
     }
-  }, [imageSrc, croppedAreaPixels]);
+  }, [
+    imageSrc,
+    croppedAreaPixels,
+    index,
+    setImageSrc,
+    setValue,
+    getValues,
+    handleClose,
+  ]);
 
   const onFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,8 +119,18 @@ function CropImageModalEdit({ image }: { image: string }) {
         handleOpen();
       }
     },
-    [],
+    [handleHasImage, handleOpen],
   );
+
+  const handleRemoveImage = () => {
+    setImageSrc(null);
+    setCroppedImage(null);
+
+    const currentImages = getValues("images") || [];
+    const newImages = [...currentImages];
+    newImages[index] = undefined;
+    setValue("images", newImages, { shouldValidate: true });
+  };
 
   return (
     <div>
@@ -200,19 +225,19 @@ function CropImageModalEdit({ image }: { image: string }) {
             <div className="mb-4 flex flex-col items-center md:flex-row md:justify-between">
               <div className="mb-4 flex flex-col justify-around gap-4 md:flex-row md:justify-center md:gap-8">
                 <label
-                  htmlFor="file-upload"
+                  htmlFor={`file-upload-${index}`}
                   className="flex h-12 w-52 items-center justify-center rounded bg-[#DFD0B8] text-center text-[#222831] hover:cursor-pointer hover:bg-[#cbb89d]"
                 >
                   <span>Change the image</span>
                   <Input
-                    id="file-upload"
+                    id={`file-upload-${index}`}
                     type="file"
                     onChange={onFileChange}
                     accept="image/*"
                     className="hidden"
                   />
                 </label>
-                <CustomButton visual="primary" onClick={() => setImageSrc("")}>
+                <CustomButton visual="primary" onClick={handleRemoveImage}>
                   Remove Image
                 </CustomButton>
               </div>
@@ -223,12 +248,12 @@ function CropImageModalEdit({ image }: { image: string }) {
           ) : (
             <div className="mb-4 flex flex-col items-center md:flex-row md:justify-between">
               <label
-                htmlFor="file-upload"
+                htmlFor={`file-upload-${index}`}
                 className="mb-4 flex h-12 w-52 items-center justify-center rounded bg-[#DFD0B8] text-center text-[#222831] hover:cursor-pointer hover:bg-[#cbb89d]"
               >
                 <span>Select an image</span>
                 <Input
-                  id="file-upload"
+                  id={`file-upload-${index}`}
                   type="file"
                   onChange={onFileChange}
                   accept="image/*"
