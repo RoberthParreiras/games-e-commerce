@@ -46,7 +46,10 @@ export default function Product() {
             <Carousel>
               <CarouselContent>
                 {game.images.map((image) => (
-                  <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                  <CarouselItem
+                    key={image.id}
+                    className="sm:basis-1/2 lg:basis-1/3"
+                  >
                     <Image
                       id={image.url}
                       src={image.url}

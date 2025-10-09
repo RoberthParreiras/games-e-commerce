@@ -30,7 +30,10 @@ export default async function Home() {
           <Carousel className="mx-10">
             <CarouselContent className="ml-5">
               {games.games.map((game) => (
-                <CarouselItem className="sm:basis-1/2 lg:basis-1/3">
+                <CarouselItem
+                  key={game.id}
+                  className="sm:basis-1/2 lg:basis-1/3"
+                >
                   <GameCardHome key={game.id} game={game} />
                 </CarouselItem>
               ))}
