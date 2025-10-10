@@ -115,12 +115,12 @@ export default function EditProduct() {
         onSubmit={form.handleSubmit(onSubmit as SubmitHandler<FormInput>)}
       >
         <CropImageModalEdit
-          key={product?.images[0].id ?? 0}
+          key={0}
           image={product?.images[0]?.url ?? ""}
           index={0}
         />
         <CropImageModalEdit
-          key={product?.images[1].id ?? 1}
+          key={1}
           image={product?.images[1]?.url ?? ""}
           index={1}
         />

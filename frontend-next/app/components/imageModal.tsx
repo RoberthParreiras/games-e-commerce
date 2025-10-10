@@ -218,8 +218,12 @@ function CropImageModal({ index }: CropImageModalProps) {
                   Remove image
                 </CustomButton>
               </div>
-              <div className="border">
-                <img src={croppedImage!} alt="preview image" />
+              <div className="border mt-5">
+                <img
+                  src={croppedImage!}
+                  alt="preview image"
+                  className="w-52 h-52"
+                />
               </div>
             </div>
           ) : (
@@ -239,7 +243,7 @@ function CropImageModal({ index }: CropImageModalProps) {
               </label>
               <div className="border border-[#DFD0B8]">
                 <SportsEsportsIcon
-                  sx={{ width: "400px", height: "400px", color: "#DFD0B8" }}
+                  sx={{ width: "208px", height: "208px", color: "#DFD0B8" }}
                 />
               </div>
             </div>

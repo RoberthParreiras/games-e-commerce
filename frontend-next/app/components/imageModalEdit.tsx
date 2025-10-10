@@ -242,14 +242,14 @@ function CropImageModalEdit({ image, index }: CropImageModalProps) {
                 </CustomButton>
               </div>
               <div className="border">
-                <img src={croppedImage!} alt="preview image" />
+                <img src={croppedImage!} alt="preview image" className="w-52 h-52"/>
               </div>
             </div>
           ) : (
             <div className="mb-4 flex flex-col items-center md:flex-row md:justify-between">
               <label
                 htmlFor={`file-upload-${index}`}
-                className="mb-4 flex h-12 w-52 items-center justify-center rounded bg-[#DFD0B8] text-center text-[#222831] hover:cursor-pointer hover:bg-[#cbb89d]"
+                className="mb-4 flex h-12 w-52 w-6 items-center justify-center rounded bg-[#DFD0B8] text-center text-[#222831] hover:cursor-pointer hover:bg-[#cbb89d]"
               >
                 <span>Select an image</span>
                 <Input
@@ -262,7 +262,7 @@ function CropImageModalEdit({ image, index }: CropImageModalProps) {
               </label>
               <div className="border border-[#DFD0B8]">
                 <SportsEsportsIcon
-                  sx={{ width: "400px", height: "400px", color: "#DFD0B8" }}
+                  sx={{ width: "208px", height: "208px", color: "#DFD0B8" }}
                 />
               </div>
             </div>
