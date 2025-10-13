@@ -185,6 +185,7 @@ jobs:
 
       - name: Start images_service
         run: |
+          docker network create app-network
           echo "${{ secrets.ENV_FILE_PROD_IMAGE_SERVICE }}" > .env
           docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait
         working-directory: ./image_service
