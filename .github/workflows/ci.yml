@@ -153,7 +153,7 @@ jobs:
       REDIS_HOST: ${{ secrets.REDIS_HOST }}
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       DATABASE_URL: ${{ secrets.CI_DATABASE_URL }}
-      
+
       MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
       MINIO_ROOT_USER: ${{ secrets.MINIO_ROOT_USER }}
       MINIO_ROOT_PASSWORD: ${{ secrets.MINIO_ROOT_PASSWORD }}
@@ -184,13 +184,19 @@ jobs:
         working-directory: ./frontend-next
 
       - name: Start images_service
-        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait
+        run: |
+          echo "${{ secrets.ENV_FILE_PROD_IMAGE_SERVICE }}" > .env
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait
         working-directory: ./image_service
 
       - name: Start api_service
-        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait
-        working-directory: ./image_service
+        run: |
+          echo "${{ secrets.ENV_FILE_PROD_API_NEST }}" > .env
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait
+        working-directory: ./api_service
 
       - name: Run Playwright tests
-        run: bun run test:e2e
+        run: |
+          echo "${{ secrets.ENV_FILE_PROD_FRONTEND_NEXT }}" > .env.production
+          bun run test:e2e
         working-directory: ./frontend-next
