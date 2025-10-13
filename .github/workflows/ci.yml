@@ -146,7 +146,7 @@ jobs:
     strategy:
       matrix:
         node-version: [20.x]
-    
+
     env:
       MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
       MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
@@ -194,7 +194,8 @@ jobs:
         run: |
           echo "${{ secrets.ENV_FILE_PROD_API_NEST }}" > .env
           docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait
-        working-directory: ./api_service
+          curl -X POST http://app:3001/users -H "Content-Type: application/json" -d '{"name": "roberth", "email": "roberth@mail.com", "password": "test123"}'
+        working-directory: ./api_nest
 
       - name: Run Playwright tests
         run: |
