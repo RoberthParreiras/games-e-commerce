@@ -199,13 +199,13 @@ jobs:
             -f ./api_nest/docker-compose.prod.yml \
             up --wait
           
-          # Wait for the API to be fully ready by polling its health endpoint
-          echo "Waiting for API service to be ready..."
-          until curl --output /dev/null --silent http://localhost:3001/api/users; do
-            echo -n '.'
-            sleep 2
-          done
-          echo "API service is up!"
+          # # Wait for the API to be fully ready by polling its health endpoint
+          # echo "Waiting for API service to be ready..."
+          # until curl --output /dev/null --silent http://localhost:3001/api/users; do
+          #   echo -n '.'
+          #   sleep 2
+          # done
+          # echo "API service is up!"
 
           curl --fail -X POST http://localhost:3001/api/users -H "Content-Type: application/json" -d '{"name": "roberth", "email": "roberth@mail.com", "password": "test123"}'
         working-directory: .
