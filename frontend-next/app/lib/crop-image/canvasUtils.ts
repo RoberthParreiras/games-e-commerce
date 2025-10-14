@@ -1,3 +1,5 @@
+const MAX_MB = 1 * 1024 * 1024;
+
 export type PixelCrop = {
   x: number;
   y: number;
@@ -30,7 +32,7 @@ export function getRadianAngle(degreeValue: number): number {
 export function rotateSize(
   width: number,
   height: number,
-  rotation: number
+  rotation: number,
 ): { width: number; height: number } {
   const rotRad = getRadianAngle(rotation);
 
@@ -50,7 +52,7 @@ export async function getCroppedImg(
   pixelCrop: PixelCrop,
   rotation = 0,
   flip: Flip = { horizontal: false, vertical: false },
-  targetSize: number = 400 // default square 400px x 400px
+  targetSize: number = 400, // default square 400px x 400px
 ): Promise<string | null> {
   const image = await createImage(imageSrc);
   const canvas = document.createElement("canvas");
@@ -66,7 +68,7 @@ export async function getCroppedImg(
   const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
     image.width,
     image.height,
-    rotation
+    rotation,
   );
 
   // set canvas size to match the bounding box
@@ -103,24 +105,68 @@ export async function getCroppedImg(
     0,
     0,
     targetSize,
-    targetSize
+    targetSize,
   );
 
-  // As a blob -> return object URL
-  return new Promise((resolve, reject) => {
-    croppedCanvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error("Failed to create blob from canvas"));
-        return;
-      }
-      resolve(URL.createObjectURL(blob));
-    }, "image/png");
+  const createdBlob = await imageCompression(croppedCanvas);
+
+  return URL.createObjectURL(createdBlob as Blob);
+}
+
+async function createBlob(
+  croppedCanvas: HTMLCanvasElement,
+  quality: number,
+): Promise<Blob | null> {
+  return new Promise<Blob>((resolve, reject) => {
+    croppedCanvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Failed to create blob from canvas"));
+          return;
+        }
+        resolve(blob);
+      },
+      "image/png",
+      quality,
+    );
   });
+}
+
+async function imageCompression(canvas: HTMLCanvasElement) {
+  let low = 0.0;
+  let high = 1.0;
+  let bestBlob: Blob | null = null;
+  const precision = 0.01;
+  const maxAttempts = 10;
+
+  for (let i = 0; i < maxAttempts; i++) {
+    // Stop when the search range is small enough
+    if (high - low <= precision) {
+      break;
+    }
+
+    const mid = low + (high - low) / 2;
+    const currentBlob = await createBlob(canvas, mid);
+
+    if (currentBlob && currentBlob.size > MAX_MB) {
+      high = mid;
+    } else {
+      bestBlob = currentBlob;
+      low = mid;
+    }
+  }
+
+  // if the image is too big, compress to the lowest value possible
+  if (!bestBlob) {
+    bestBlob = await createBlob(canvas, 0.1);
+  }
+
+  return bestBlob;
 }
 
 export async function getRotatedImage(
   imageSrc: string,
-  rotation = 0
+  rotation = 0,
 ): Promise<string | null> {
   const image = await createImage(imageSrc);
   const canvas = document.createElement("canvas");
