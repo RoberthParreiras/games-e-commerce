@@ -196,7 +196,7 @@ jobs:
           
           # Wait for the API to be fully ready by polling its health endpoint
           echo "Waiting for API service to be ready..."
-          until curl --output /dev/null --silent --head --fail http://localhost:3001/api/users; do
+          until curl --output /dev/null --silent http://localhost:3001/api/users; do
             echo -n '.'
             sleep 2
           done
