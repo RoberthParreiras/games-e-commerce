@@ -179,6 +179,10 @@ jobs:
         run: bun install
         working-directory: ./frontend-next
 
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps
+        working-directory: ./frontend-next
+
       - name: Build frontend
         run: bun run build
         working-directory: ./frontend-next
