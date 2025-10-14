@@ -201,6 +201,6 @@ jobs:
       - name: Run Playwright tests
         run: |
           echo "${{ secrets.ENV_FILE_PROD_FRONTEND_NEXT }}" > .env.production
-          echo "NEXT_PUBLIC_API_URL=http://localhost:3001/api" >> .env.production
+          echo "NEXT_PUBLIC_API_URL=http://localhost:3001" >> .env.production
           bun run test:e2e
         working-directory: ./frontend-next
