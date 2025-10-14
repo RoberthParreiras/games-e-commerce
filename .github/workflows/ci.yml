@@ -187,20 +187,16 @@ jobs:
         run: bun run build
         working-directory: ./frontend-next
 
-      - name: Start images_service
+      - name: Start services
         run: |
           docker network create app-network
-          echo "${{ secrets.ENV_FILE_PROD_IMAGE_SERVICE }}" > .env
-          docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait
-        working-directory: ./image_service
-
-      - name: Start api_service
-        run: |
-          echo "${{ secrets.ENV_FILE_PROD_API_NEST }}" > .env
-          docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait
+          # Copy all env files and start all services together
+          echo "${{ secrets.ENV_FILE_PROD_IMAGE_SERVICE }}" > ./image_service/.env
+          echo "${{ secrets.ENV_FILE_PROD_API_NEST }}" > ./api_nest/.env
+          docker compose -f ./image_service/docker-compose.yml -f ./image_service/docker-compose.prod.yml -f ./api_nest/docker-compose.yml -f ./api_nest/docker-compose.prod.yml up -d --wait
           sleep 5
-          curl -X POST http://localhost:3001/api/users -H "Content-Type: application/json" -d '{"name": "roberth", "email": "roberth@mail.com", "password": "test123"}'
-        working-directory: ./api_nest
+          curl --fail -X POST http://localhost:3001/api/users -H "Content-Type: application/json" -d '{"name": "roberth", "email": "roberth@mail.com", "password": "test123"}'
+        working-directory: .
 
       - name: Run Playwright tests
         run: |
