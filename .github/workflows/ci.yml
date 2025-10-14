@@ -190,11 +190,18 @@ jobs:
       - name: Start services
         run: |
           docker network create app-network
-          # Copy all env files and start all services together
           echo "${{ secrets.ENV_FILE_PROD_IMAGE_SERVICE }}" > ./image_service/.env
           echo "${{ secrets.ENV_FILE_PROD_API_NEST }}" > ./api_nest/.env
           docker compose -f ./image_service/docker-compose.yml -f ./image_service/docker-compose.prod.yml -f ./api_nest/docker-compose.yml -f ./api_nest/docker-compose.prod.yml up -d --wait
-          sleep 5
+          
+          # Wait for the API to be fully ready by polling its health endpoint
+          echo "Waiting for API service to be ready..."
+          until curl --output /dev/null --silent --head --fail http://localhost:3001/api/health; do
+            echo -n '.'
+            sleep 2
+          done
+          echo "API service is up!"
+
           curl --fail -X POST http://localhost:3001/api/users -H "Content-Type: application/json" -d '{"name": "roberth", "email": "roberth@mail.com", "password": "test123"}'
         working-directory: .
 
