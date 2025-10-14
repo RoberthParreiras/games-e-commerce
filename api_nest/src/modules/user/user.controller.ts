@@ -18,7 +18,7 @@ import { ZodValidationPipe } from '../../models/zod.pipe';
 import { CreateUser, CreateUserDto, UpdateUser } from './user.schema';
 import { convertBytesToUuid } from '../../common/utils/uuid.util';
 
-@Controller('/user')
+@Controller('/users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
   private readonly logger = new Logger(UserController.name);

@@ -32,7 +32,7 @@ export default function CreateProduct() {
       name: "",
       description: "",
       price: "",
-      image: undefined,
+      images: undefined,
     },
   });
 
@@ -44,12 +44,15 @@ export default function CreateProduct() {
 
     const formData = new FormData();
 
-    formData.append("file", data.image, "image.jpg");
+    for (const file of data.images) {
+      formData.append("file", file, "image.jpg");
+    }
+
     formData.append("name", data.name);
     formData.append("description", data.description);
     formData.append("price", String(data.price));
 
-    await apiFetch("/games", {
+    await apiFetch("/api/games", {
       method: "POST",
       body: formData,
       accessToken: session.accessToken,
@@ -64,10 +67,11 @@ export default function CreateProduct() {
         className="mx-auto w-full max-w-5xl"
         onSubmit={form.handleSubmit(onSubmit as SubmitHandler<FormInput>)}
       >
-        <CropImageModal />
-        {form.formState.errors.image && (
+        <CropImageModal index={0} key={0}/>
+        <CropImageModal index={1} key={1}/>
+        {form.formState.errors.images && (
           <p className="text-destructive text-sm font-medium">
-            {form.formState.errors.image.message}
+            {form.formState.errors.images.message}
           </p>
         )}
         <GameForm />

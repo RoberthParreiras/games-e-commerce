@@ -1,52 +1,52 @@
-name: CD Pipeline
+# name: CD Pipeline
 
-on:
-  pull_request:
-    types: [closed]
-    branches: [main]
+# on:
+#   pull_request:
+#     types: [closed]
+#     branches: [main]
 
-jobs:
-  deploy:
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            PARENT_DIR="/var/www"
-            PROJECT_DIR="/var/www/games-e-commerce"
+# jobs:
+#   deploy:
+#     if: github.event.pull_request.merged == true
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Deploy to EC2
+#         uses: appleboy/ssh-action@v1
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_SSH_KEY }}
+#           script: |
+#             PARENT_DIR="/var/www"
+#             PROJECT_DIR="/var/www/games-e-commerce"
 
-            sudo mkdir -p $PARENT_DIR
-            sudo chown -R $USER:$USER $PARENT_DIR
+#             sudo mkdir -p $PARENT_DIR
+#             sudo chown -R $USER:$USER $PARENT_DIR
 
-            # Check if the project directory exists
-            if [ -d "$PROJECT_DIR" ]; then
-              echo "Project directory exists. Pulling latest changes."
-              cd $PROJECT_DIR
-              git config --global --add safe.directory $PROJECT_DIR
-              git pull origin main
-            else
-              echo "Project directory does not exist. Cloning repository."
-              # Make sure to replace the URL with your repository's URL
-              git clone https://github.com/RoberthParreiras/games-e-commerce.git $PROJECT_DIR
-              cd $PROJECT_DIR
-            fi
+#             # Check if the project directory exists
+#             if [ -d "$PROJECT_DIR" ]; then
+#               echo "Project directory exists. Pulling latest changes."
+#               cd $PROJECT_DIR
+#               git config --global --add safe.directory $PROJECT_DIR
+#               git pull origin main
+#             else
+#               echo "Project directory does not exist. Cloning repository."
+#               # Make sure to replace the URL with your repository's URL
+#               git clone https://github.com/RoberthParreiras/games-e-commerce.git $PROJECT_DIR
+#               cd $PROJECT_DIR
+#             fi
 
-            cd image_service
-            echo "${{ secrets.ENV_FILE_PROD_IMAGE_SERVICE }}" > .env
-            chmod +x start-prod.sh
-            ./start-prod.sh
+#             cd image_service
+#             echo "${{ secrets.ENV_FILE_PROD_IMAGE_SERVICE }}" > .env
+#             chmod +x start-prod.sh
+#             ./start-prod.sh
 
-            cd ../api_nest
-            echo "${{ secrets.ENV_FILE_PROD_API_NEST }}" > .env
-            chmod +x start-prod.sh
-            ./start-prod.sh
+#             cd ../api_nest
+#             echo "${{ secrets.ENV_FILE_PROD_API_NEST }}" > .env
+#             chmod +x start-prod.sh
+#             ./start-prod.sh
 
-            cd ../frontend-next
-            echo "${{ secrets.ENV_FILE_PROD_FRONTEND_NEXT }}" > .env.production
-            chmod +x start-prod.sh
-            ./start-prod.sh
+#             cd ../frontend-next
+#             echo "${{ secrets.ENV_FILE_PROD_FRONTEND_NEXT }}" > .env.production
+#             chmod +x start-prod.sh
+#             ./start-prod.sh

@@ -24,11 +24,18 @@ model User {
 }
 
 model Games {
-  id          Bytes    @id @db.Binary(16)
+  id          Bytes       @id @db.Binary(16)
   name        String
   description String
-  image       String
   price       Decimal
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  images      GameImage[]
+}
+
+model GameImage {
+  id     Bytes  @id @db.Binary(16)
+  url    String
+  game   Games  @relation(fields: [gameId], references: [id])
+  gameId Bytes  @db.Binary(16)
 }

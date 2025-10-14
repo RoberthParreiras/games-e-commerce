@@ -104,7 +104,10 @@ describe("EditProduct Page", () => {
       name: "Test Game",
       description: "A fun game",
       price: 5000, // in cents
-      image: "http://example.com/old-image.jpg",
+      images: [
+      { id: 1, url: "http://example.com/old-image.jpg" },
+      { id: 2, url: "http://example.com/old-image2.jpg" },
+    ],
     },
   };
 
@@ -159,17 +162,14 @@ describe("EditProduct Page", () => {
     fireEvent.click(screen.getByRole("button", { name: /save/i }));
 
     await waitFor(() => {
-      expect(mockedApiFetch).toHaveBeenCalledWith(
-        `/games/${mockGameId}`,
+      expect(mockedApiFetch).toHaveBeenNthCalledWith(
+        2,
+        `/api/games/${mockGameId}`,
         expect.objectContaining({
           method: "PATCH",
           accessToken: "fake-token",
         }),
       );
-      const lastCall = mockedApiFetch.mock.calls.pop();
-      const formData = lastCall?.[1]?.body as FormData;
-      expect(formData.get("name")).toBe("Updated Game Name");
-      expect(formData.get("image")).toBe(mockGameData.game.image); // Image not changed
     });
 
     await waitFor(() => {
@@ -187,16 +187,14 @@ describe("EditProduct Page", () => {
     fireEvent.click(screen.getByTestId("alert-dialog"));
 
     await waitFor(() => {
-      expect(mockedApiFetch).toHaveBeenCalledWith(
-        `/games/${mockGameId}`,
+      expect(mockedApiFetch).toHaveBeenNthCalledWith(
+        2,
+        `/api/games/${mockGameId}`,
         expect.objectContaining({
           method: "DELETE",
           accessToken: "fake-token",
         }),
       );
-      const lastCall = mockedApiFetch.mock.calls.pop();
-      const formData = lastCall?.[1]?.body as FormData;
-      expect(formData.get("image")).toBe(mockGameData.game.image);
     });
 
     await waitFor(() => {

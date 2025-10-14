@@ -26,7 +26,9 @@ jest.mock("@/app/schemas/gameFormSchema", () => ({
     name: z.string().min(1, "Name is required"),
     description: z.string().min(1, "Description is required"),
     price: z.string().min(1, "Price is required"),
-    image: z.any().refine((file) => file, "Image is required."),
+    images: z.any().refine((files) => files && files.length > 0, {
+      message: "At least one image is required.",
+    }),
   }),
 }));
 
@@ -42,7 +44,7 @@ jest.mock("@/app/components/imageModal", () => ({
         data-testid="image-input"
         onChange={(e) => {
           if (e.target.files && e.target.files.length > 0) {
-            setValue("image", e.target.files[0], { shouldValidate: true });
+            setValue("images", [e.target.files[0]], { shouldValidate: true });
           }
         }}
       />
@@ -143,7 +145,8 @@ describe("CreateProduct Page", () => {
       fireEvent.change(screen.getByPlaceholderText(/R\$ 0,00/i), {
         target: { value: "123" },
       });
-      fireEvent.change(screen.getByTestId("image-input"), {
+      const imageInputs = screen.getAllByTestId("image-input");
+      fireEvent.change(imageInputs[0], {
         target: { files: [mockFile] },
       });
     });
@@ -154,7 +157,7 @@ describe("CreateProduct Page", () => {
 
     await waitFor(() => {
       expect(mockedApiFetch).toHaveBeenCalledWith(
-        "/games",
+        "/api/games",
         expect.objectContaining({
           method: "POST",
           accessToken: "fake-token",
@@ -186,7 +189,9 @@ describe("CreateProduct Page", () => {
       fireEvent.click(screen.getByRole("button", { name: /save/i }));
     });
 
-    expect(await screen.findByText("Image is required.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("At least one image is required."),
+    ).toBeInTheDocument();
     expect(mockedApiFetch).not.toHaveBeenCalled();
   });
 

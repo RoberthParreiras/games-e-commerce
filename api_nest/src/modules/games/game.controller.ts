@@ -12,11 +12,11 @@ import {
   Query,
   Req,
   Res,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 
 import { GamesService } from './game.service';
@@ -41,13 +41,13 @@ export class GamesController {
 
   @UseGuards(AuthGuard)
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(AnyFilesInterceptor())
   async createGame(
     @Body() body: CreateGameDto,
     @Req() request: Request,
     @Res() response: Response,
-    @UploadedFile()
-    file: Express.Multer.File,
+    @UploadedFiles()
+    files: Array<Express.Multer.File>,
   ) {
     const authorization = request.headers['authorization'];
     if (!authorization) {
@@ -59,10 +59,14 @@ export class GamesController {
       });
     }
 
-    const imageUrlCreated = await this.imageService.create({
-      authorization,
-      file,
-    });
+    const imagesUrlCreated = await Promise.all(
+      files.map((file) =>
+        this.imageService.create({
+          authorization,
+          file,
+        }),
+      ),
+    );
 
     const createGameDto = {
       name: body.name,
@@ -77,7 +81,7 @@ export class GamesController {
 
     const gameWithImageUrl = {
       ...createGameDto,
-      image: imageUrlCreated,
+      images: imagesUrlCreated,
     };
 
     const gameCreated = await this.gamesService.create(gameWithImageUrl);
@@ -144,14 +148,14 @@ export class GamesController {
 
   @UseGuards(AuthGuard)
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(AnyFilesInterceptor())
   async updateGame(
     @Param('id') id: string,
     @Body() body: UpdateGameDto,
     @Res() response: Response,
     @Req() request: Request,
-    @UploadedFile()
-    file: Express.Multer.File,
+    @UploadedFiles()
+    files: Array<Express.Multer.File>,
   ) {
     const authorization = request.headers['authorization'];
     if (!authorization) {
@@ -163,19 +167,36 @@ export class GamesController {
       });
     }
 
-    // check if the image has changed
-    let image = '';
-    if (file) {
-      image = await this.imageService.create({
-        authorization,
-        file,
-      });
-      await this.imageService.delete({
-        authorization,
-        image_url: body.oldImage!,
-      });
-    } else if (body.image) {
-      image = body.image;
+    const currentGame = await this.gamesService.get({ id });
+    const oldImageUrls = currentGame.images.map((image) => image.url);
+
+    const newImageUrls = await Promise.all(
+      files.map((file) =>
+        this.imageService.create({
+          authorization,
+          file,
+        }),
+      ),
+    );
+
+    const keptImageUrls = body.imagesToKeep
+      ? JSON.parse(body.imagesToKeep)
+      : [];
+    const finalImagesUrls = [...keptImageUrls, ...newImageUrls];
+
+    const imagesToDelete = oldImageUrls.filter(
+      (url) => !finalImagesUrls.includes(url),
+    );
+
+    if (imagesToDelete.length > 0) {
+      await Promise.all(
+        imagesToDelete.map((image_url) =>
+          this.imageService.delete({
+            authorization,
+            image_url: image_url,
+          }),
+        ),
+      );
     }
 
     await this.gamesService.patch({
@@ -183,12 +204,8 @@ export class GamesController {
       name: body.name,
       description: body.description,
       price: body.price,
-      image: image,
+      images: finalImagesUrls,
     });
-
-    this.logger.log(
-      `[${this.updateGame.name}] ${HttpStatus.OK} - Game with id: ${id} updated successfully`,
-    );
 
     response.status(HttpStatus.OK).json({
       message: 'Game updated with success',
