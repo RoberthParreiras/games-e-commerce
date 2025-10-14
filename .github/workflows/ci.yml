@@ -192,8 +192,12 @@ jobs:
           docker network create app-network
           echo "${{ secrets.ENV_FILE_PROD_IMAGE_SERVICE }}" > ./image_service/.env
           echo "${{ secrets.ENV_FILE_PROD_API_NEST }}" > ./api_nest/.env
-          docker compose -f ./image_service/docker-compose.yml -f ./image_service/docker-compose.prod.yml up -d --wait
-          docker compose -f ./api_nest/docker-compose.yml -f ./api_nest/docker-compose.prod.yml up -d --wait
+          docker compose \
+            -f ./image_service/docker-compose.yml \
+            -f ./image_service/docker-compose.prod.yml \
+            -f ./api_nest/docker-compose.yml \
+            -f ./api_nest/docker-compose.prod.yml \
+            up --wait
           
           # Wait for the API to be fully ready by polling its health endpoint
           echo "Waiting for API service to be ready..."
