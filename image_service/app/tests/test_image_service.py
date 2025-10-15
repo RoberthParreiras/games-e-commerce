@@ -13,6 +13,11 @@ def mock_image_repository():
     return AsyncMock()
 
 
+@pytest.fixture
+def file_content():
+    return b"GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+
+
 @pytest.fixture(autouse=True)
 def override_image_repository(mock_image_repository):
     app.dependency_overrides[ImageRepository] = lambda: mock_image_repository
@@ -23,7 +28,7 @@ def override_image_repository(mock_image_repository):
     app.dependency_overrides = {}
 
 
-def test_create_image_success(mock_image_repository):
+def test_create_image_success(mock_image_repository, file_content):
     """Test successful image creation via API endpoint."""
     expected_metadata = {
         "id": "68909019c7ce69410acefca8",
@@ -37,7 +42,7 @@ def test_create_image_success(mock_image_repository):
     }
     mock_image_repository.create.return_value = expected_metadata
 
-    file_content = b"fake image data"
+    file_content = file_content
     files = {"file": ("test.jpg", file_content, "image/jpeg")}
     params = {"user_id": "a1b2c3d4-e5f6-5895-1234-567890abcdef"}
 
@@ -87,7 +92,7 @@ def test_get_image_not_found(mock_image_repository):
     assert response.status_code == 404
 
 
-def test_update_image_success(mock_image_repository):
+def test_update_image_success(mock_image_repository, file_content):
     image_url = "add09d36-9d1f-4c1d-b177-e1dd6baf76f9.png"
     user_id = "a1b2c3d4-e5f6-5895-1234-567890abcdef"
     expected_metadata = {
@@ -101,7 +106,7 @@ def test_update_image_success(mock_image_repository):
         "uploaded_at": "2025-08-04T07:48:57.419399",
     }
 
-    file_content = b"new fake image data"
+    file_content = file_content
     files = {"file": ("new_image.png", file_content, "image/png")}
     params = {
         "image_url": image_url,
@@ -126,7 +131,7 @@ def test_delete_image_success(mock_image_repository):
     client = TestClient(app)
     headers = {"Authorization": "Bearer testtoken"}
     params = {"image_url": image_url}
-    response = client.delete(f"/image/delete/", params=params, headers=headers)
+    response = client.delete("/image/delete/", params=params, headers=headers)
 
     assert response.status_code == 200
     assert response.json() == {"message": "Image deleted successfully"}
@@ -139,6 +144,6 @@ def test_delete_image_failure(mock_image_repository):
     client = TestClient(app)
     headers = {"Authorization": "Bearer testtoken"}
     params = {"image_url": image_url}
-    response = client.delete(f"/image/delete/", params=params, headers=headers)
+    response = client.delete("/image/delete/", params=params, headers=headers)
 
     assert response.status_code == 500

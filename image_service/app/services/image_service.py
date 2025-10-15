@@ -40,7 +40,11 @@ class ImageService:
 
             raise InvalidFileTypeException("Invalid file type. Only images are allowed")
 
-        image_metadata = await self.image_repository.update(file, image_url, user_id)
+        compressed_file = await compress_image(file)
+
+        image_metadata = await self.image_repository.update(
+            compressed_file, image_url, user_id
+        )
         if not image_metadata:
             log.error("Could not update image")
 

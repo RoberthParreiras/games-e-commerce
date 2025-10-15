@@ -5,6 +5,11 @@ from dotenv import load_dotenv
 import logging
 
 from .core.logging import setup_logging
+from .services.exceptions import (
+    InvalidFileTypeException,
+    ImageStorageException,
+    ImageNotFoundException,
+)
 
 
 dotenv_path = os.path.join(
@@ -12,13 +17,8 @@ dotenv_path = os.path.join(
 )
 load_dotenv(dotenv_path)
 
-from app.api.v1.endpoints.image import router
-from app.core.config import minio_client, create_minio_bucket
-from .services.exceptions import (
-    InvalidFileTypeException,
-    ImageStorageException,
-    ImageNotFoundException,
-)
+from app.api.v1.endpoints.image import router # noqa: E402
+from app.core.config import minio_client, create_minio_bucket # noqa: E402
 
 create_minio_bucket(minio_client)
 

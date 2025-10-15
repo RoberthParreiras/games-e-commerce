@@ -2,6 +2,7 @@ from fastapi import UploadFile
 import io
 from PIL import Image
 
+
 async def compress_image(file: UploadFile) -> UploadFile:
     image_data = await file.read()
     image_stream = io.BytesIO(image_data)
@@ -17,5 +18,5 @@ async def compress_image(file: UploadFile) -> UploadFile:
             filename=file.filename,
             file=output_stream,
         )
-    
+
     return compressed_file
