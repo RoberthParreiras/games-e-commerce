@@ -2,6 +2,7 @@ from fastapi import UploadFile, Depends
 import logging
 
 from ..repository.image_repository import ImageRepository
+from ..utilities.compress_image import compress_image
 from .exceptions import (
     ImageStorageException,
     InvalidFileTypeException,
@@ -21,7 +22,9 @@ class ImageService:
 
             raise InvalidFileTypeException("Invalid file type. Only images are allowed")
 
-        image_metadata = await self.image_repository.create(file, user_id)
+        compressed_file = await compress_image(file)
+
+        image_metadata = await self.image_repository.create(compressed_file, user_id)
         if not image_metadata:
             log.error(
                 f"Could not create the image for user_id={user_id}, filename={file.filename}"

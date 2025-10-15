@@ -38,9 +38,17 @@ For detailed instructions on setting up and running each service, please refer t
 
 ## ⚙️ CI/CD Pipeline
 
-This project includes a `Jenkinsfile` to set up a CI/CD pipeline using [Jenkins](https://www.jenkins.io/). This allows for automated building, testing, and deployment of the services.
+This project includes a `Jenkinsfile` for reference, but **CI/CD is implemented using [GitHub Actions](https://github.com/features/actions)**. Automated building, testing, and deployment of the services are handled via GitHub Actions workflows.
 
-### Running the Jenkins Pipeline
+### Running the CI/CD Pipeline
+
+- **GitHub Actions:**  
+  The primary CI/CD pipeline is configured using GitHub Actions. Workflows are defined in the `.github/workflows/` directory and are triggered on push and pull request events.  
+
+- **Jenkins (Optional):**  
+  A `Jenkinsfile` is included for teams that prefer Jenkins. You can set up Jenkins using the provided Dockerfile and instructions below, but this is not required for the default CI/CD process.
+
+## Running the Jenkins Pipeline
 
 1.  **Setup Jenkins:** You could use this Dockerfile to create a Jenkins that runs Docker:
 
